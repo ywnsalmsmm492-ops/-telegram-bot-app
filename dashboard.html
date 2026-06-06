@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة القيود - التزام برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --success-bg: rgba(34, 197, 94, 0.15);
+            --success-color: #22c55e;
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-color: #ef4444;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        /* رأس الصفحة والشعار */
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 4px;
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--gold-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* شريط البحث */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 40px 12px 12px;
+            box-sizing: border-box;
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold-color);
+        }
+        .search-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--hint-color);
+            font-size: 16px;
+        }
+
+        /* حالة التحميل أو القائمة الفارغة */
+        .status-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--hint-color);
+            font-size: 14px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(204, 164, 59, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--gold-color);
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* قائمة الكروت */
+        .entries-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* كرت القيد المحاسبي */
+        .entry-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px;
+        }
+
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .entry-type-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .type-receipt {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+        }
+        .type-payment {
+            background-color: var(--danger-bg);
+            color: var(--danger-color);
+        }
+
+        .entry-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .amount-display {
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .amount-receipt { color: var(--success-color); }
+        .amount-payment { color: var(--danger-color); }
+        .currency-label {
+            font-size: 12px;
+            color: var(--hint-color);
+            font-weight: 400;
+            margin-right: 4px;
+        }
+
+        .entry-details {
+            text-align: left;
+        }
+        .description-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        .date-text {
+            font-size: 11px;
+            color: var(--hint-color);
+            margin-top: 2px;
+        }
+
+        /* أزرار التحكم بالكرت */
+        .entry-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            border-top: 1px dashed rgba(255,255,255,0.06);
+            padding-top: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px;
+            border-radius: 10px;
+            color: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .action-btn:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .btn-edit:active {
+            border-color: var(--gold-color);
+            color: var(--gold-color);
+        }
+        .btn-delete:active {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+            background: var(--danger-bg);
+        }
+
+        /* زر الإغلاق والرجوع */
+        .close-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+        .close-btn:active {
+            background: rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="header-section">
+            <div class="page-title">📁 إدارة القيود المحاسبية</div>
+            <div style="font-size: 12px; color: var(--hint-color);" id="entries-count">القيود: 0</div>
+        </div>
+
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم الحساب، البيان، التاريخ أو النوع..." oninput="filterEntries()">
+        </div>
+
+        <div id="loadingStatus" class="status-message">
+            <div class="spinner"></div>
+            <div>جاري جلب القيود من قاعدة البيانات...</div>
+        </div>
+
+        <div id="entriesList" class="entries-list" style="display: none;"></div>
+
+        <button class="close-btn" onclick="closeWebApp()">
+            <span>↩️</span> إغلاق الشاشة العائمة
+        </button>
+
+    </div>
+
+    <script>
+        let tg = null;
+        let allEntries = []; // لتخزين مصفوفة البيانات الأصلية القادمة من البوت
+
+        // 1. تهيئة ميزة ومكتبة تليجرام WebApp
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+                
+                // طلب جلب القيود فور فتح الواجهة مباشرة
+                requestDataFromBot();
+            }
+        } catch (e) {
+            console.log("خارج بيئة التليجرام - تعمل كصفحة متصفح تقليدية");
+            // بيانات تجريبية (Mock Data) للمعاينة خارج التليجرام فقط
+            setTimeout(() => {
+                renderMockData();
+            }, 1000);
+        }
+
+        // إرسال أمر للبوت لطلب البيانات
+        function requestDataFromBot() {
+            if (tg) {
+                tg.sendData(JSON.stringify({ action: 'load_entries', system: 'التزام_برو' }));
+            }
+        }
+
+        // استيعاب البيانات ورسم القيود ديناميكياً
+        function displayEntries(entriesArray) {
+            allEntries = entriesArray;
+            const loadingStatus = document.getElementById('loadingStatus');
+            const entriesList = document.getElementById('entriesList');
+            const countDisplay = document.getElementById('entries-count');
+
+            loadingStatus.style.display = 'none';
+            entriesList.innerHTML = '';
+
+            if (!allEntries || allEntries.length === 0) {
+                loadingStatus.innerHTML = "📭 لا يوجد قيود مسجلة حالياً.";
+                loadingStatus.style.display = 'block';
+                entriesList.style.display = 'none';
+                countDisplay.innerText = "القيود: 0";
+                return;
+            }
+
+            entriesList.style.display = 'flex';
+            countDisplay.innerText = `القيود: ${allEntries.length}`;
+
+            allEntries.forEach(entry => {
+                const card = createEntryCard(entry);
+                entriesList.appendChild(card);
+            });
+        }
+
+        // إنشاء كرت مخصص لكل قيد بنية DOM سريعة تمنع الثغرات
+        function createEntryCard(entry) {
+            const card = document.createElement('div');
+            card.className = 'entry-card';
+            card.setAttribute('data-id', entry.id);
+
+            const isReceipt = entry.type === 'receipt';
+            const typeLabel = isReceipt ? 'قيد قبض' : 'قيد صرف';
+            const badgeClass = isReceipt ? 'type-receipt' : 'type-payment';
+            const amountClass = isReceipt ? 'amount-receipt' : 'amount-payment';
+
+            card.innerHTML = `
+                <div class="entry-header">
+                    <div class="account-info">👤 <span>${escapeHtml(entry.account_name)}</span></div>
+                    <span class="entry-type-badge ${badgeClass}">${typeLabel}</span>
+                </div>
+                <div class="entry-body">
+                    <div class="amount-display ${amountClass}">
+                        ${entry.amount.toLocaleString()}
+                        <span class="currency-label">${escapeHtml(entry.currency)}</span>
+                    </div>
+                    <div class="entry-details">
+                        <div class="description-text">${escapeHtml(entry.description)}</div>
+                        <div class="date-text">📅 ${escapeHtml(entry.date)}</div>
+                    </div>
+                </div>
+                <div class="entry-actions">
+                    <button class="action-btn btn-edit" onclick="editEntry(${entry.id})">🖊️ تعديل</button>
+                    <button class="action-btn btn-delete" onclick="deleteEntry(${entry.id})">🗑️ حذف</button>
+                </div>
+            `;
+            return card;
+        }
+
+        // 2. معالجة التعديل (إرسال الإشارة والـ id للبوت)
+        function editEntry(id) {
+            if (tg) {
+                tg.sendData(JSON.stringify({ action: 'edit_entry', entry_id: id, system: 'التزام_برو' }));
+            } else {
+                alert("طلب تعديل القيد رقم: " + id);
+            }
+        }
+
+        // 3. معالجة الحذف (تأكيد مدمج ثم إرسال للبوت)
+        function deleteEntry(id) {
+            if (confirm("هل أنت متأكد من رغبتك في حذف هذا القيد نهائياً؟")) {
+                if (tg) {
+                    tg.sendData(JSON.stringify({ action: 'delete_entry', entry_id: id, system: 'التزام_برو' }));
+                } else {
+                    alert("تم إرسال أمر حذف القيد: " + id);
+                    // تصفية وحذف محلي للمعاينة في المتصفح العادي
+                    displayEntries(allEntries.filter(e => e.id !== id));
+                }
+            }
+        }
+
+        // 4. شريط البحث والتصفية الذكية
+        function filterEntries() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const entriesList = document.getElementById('entriesList');
+            const cards = entriesList.getElementsByClassName('entry-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const cardText = cards[i].innerText.toLowerCase();
+                if (cardText.includes(query)) {
+                    cards[i].style.display = 'flex';
+                } else {
+                    cards[i].style.display = 'none';
+                }
+            }
+        }
+
+        // دالة لمنع حقن نصوص برمجية خبيثة عبر الـ JSON حماية لأمان نظامك
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function closeWebApp() {
+            if (tg) {
+                tg.close();
+            } else {
+                alert("إغلاق نافذة الواجهة");
+            }
+        }
+
+        // محاكاة تعبئة البيانات خارج بيئة تليجرام لغرض الاختبار المباشر
+        function renderMockData() {
+            const mockJSON = {
+                "entries": [
+                    {"id": 1, "type": "receipt", "amount": 5000, "currency": "يمني", "description": "دفعة مقدمة"، "date": "2026-05-15", "account_name": "أحمد السنباني"},
+                    {"id": 2, "type": "payment", "amount": 1200, "currency": "سعودي", "description": "شراء كروت وبطائق"، "date": "2026-06-01", "account_name": "مؤسسة الوفاء"},
+                    {"id": 3, "type": "receipt", "amount": 450, "currency": "دولار", "description": "تصاميم وديكورات مبيعة"، "date": "2026-06-05", "account_name": "شركة الإبداع"}
+                ]
+            };
+            displayEntries(mockJSON.entries);
+        }
+    </script>
+</body>
+</html>
+grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color:var(--danger-color);">0</span></div>
+                <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">📝 المعاملات</span><span class="stat-value">0</span></div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             1. الواجهة الرئيسية (Main Page)
+             ========================================== -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">
+                    <span class="btn-icon">🏦</span><span class="btn-text">📦 عرض الصناديق المحاسبية</span>
+                </button>
+                
+                <button class="btn-item" onclick="sendAction('add_account')">
+                    <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('account_statement')">
+                    <span class="btn-icon">📋</span><span class="btn-text">كشف حساب</span>
+                </button>
+                <button class="btn-item full-width" onclick="sendAction('add_entry')">
+                    <span class="btn-icon">📝</span><span class="btn-text">إضافة قيد</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('accounts')">
+                    <span class="btn-icon">👤</span><span class="btn-text">الحسابات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('reports')">
+                    <span class="btn-icon">📊</span><span class="btn-text">التقارير</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('redeem_points')">
+                    <span class="btn-icon">🎁</span><span class="btn-text">استبدال النقاط</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('referral_link')">
+                    <span class="btn-icon">🔗</span><span class="btn-text">رابط الإحالة</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('main_menu')">
+                    <span class="btn-icon">🔙</span><span class="btn-text">القائمة الرئيسية</span>
+                </button>
+                
+                <button class="btn-item all-services-trigger" onclick="switchPage('servicesPage')">
+                    <span class="btn-icon">📂</span><span class="btn-text" style="color: white;">جميع الخدمات</span>
+                </button>
+                
+                <button class="btn-item full-width" onclick="sendAction('control_panel')">
+                    <span class="btn-icon">📱</span><span class="btn-text">لوحة التحكم</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             2. واجهة الصناديق المحاسبية
+             ========================================== -->
+        <div id="boxesPage" class="page">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 4px; padding-right: 4px;">📋 كشف الصناديق الحالية:</div>
+            
+            <div class="box-container-card">
+                <div class="box-header-row">
+                    <div class="box-card-title">الصندوق الرئيسي</div>
+                    <div class="box-card-icon">🏦</div>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الريال اليمني</span>
+                    <span style="color: var(--success-color);">لكم 0.0 يمني</span>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الريال السعودي</span>
+                    <span style="color: var(--danger-color);">عليكم 0.0 سعودي</span>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الدولار الأمريكي</span>
+                    <span style="color: var(--danger-color);">عليكم 0.0 دولار</span>
+                </div>
+                <div class="box-balance-converted">
+                    الرصيد بالمقابل لكم 0.0 يمني
+                </div>
+                
+                <div class="box-card-actions">
+                    <button class="box-action-sub-btn" onclick="sendAction('box_edit')">🖊️ تعديل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_transfer')">📈 تحويل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_exchange')">🛒 صرف</button>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="switchPage('mainPage')">
+                <span>↩️</span> رجوع للوحة التحكم الرئيسية
+            </button>
+        </div>
+
+        <!-- ==========================================
+             3. واجهة جميع الخدمات
+             ========================================== -->
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="sendAction('transfers')">
+                    <span class="btn-icon">💵</span><span class="btn-text">الحوالات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('warehouses')">
+                    <span class="btn-icon">🏠</span><span class="btn-text">المخازن</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('invoices')">
+                    <span class="btn-icon">🧾</span><span class="btn-text">الفواتير</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('debt_followup')">
+                    <span class="btn-icon">📈</span><span class="btn-text">متابعة الديون</span>
+                </button>
+                <button class="btn-item full-width" onclick="sendAction('staff_management')">
+                    <span class="btn-icon">👥</span><span class="btn-text">إدارة الموظفين</span>
+                </button>
+                
+                <button class="back-btn" onclick="switchPage('mainPage')">
+                    <span>↩️</span> رجوع للقائمة الرئيسية
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             4. واجهة الإعدادات الفخمة بعد الضغط على الترس
+             ========================================== -->
+        <div id="settingsPage" class="page">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 4px; padding-right: 4px;">⚙️ إعدادات النظام وتفضيلات الحساب:</div>
+            
+            <div class="grid-layout">
+                <div class="settings-section-title full-width">⚙️ التحكم العام</div>
+                <!-- زر الإعدادات لإرسال إشارة للبوت -->
+                <button class="btn-item full-width" onclick="sendAction('settings')">
+                    <span class="btn-icon">🔧</span><span class="btn-text">تأكيد خصائص الإعدادات</span>
+                </button>
+
+                <div class="settings-section-title full-width">🤝 الدعم والخدمة</div>
+                <!-- زر الدعم الفني للبوت -->
+                <button class="btn-item full-width" onclick="sendAction('support')">
+                    <span class="btn-icon">💬</span><span class="btn-text">تواصل مع الدعم الفني</span>
+                </button>
+
+                <button class="back-btn" onclick="switchPage('mainPage')">
+                    <span>↩️</span> رجوع للقائمة الرئيسية
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let tg = null;
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+            }
+        } catch (e) {
+            console.log("تم التشغيل كملف تحميل عادي خارج بيئة التليجرام");
+        }
+
+        function switchPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            for (let i = 0; i < pages.length; i++) {
+                pages[i].classList.remove('active');
+            }
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+        }
+
+        function sendAction(actionName) {
+            if (tg) {
+                tg.sendData(JSON.stringify({ action: actionName, system: 'التزام_برو' }));
+            } else {
+                alert("تم إرسال الأمر: " + actionName + " (سيعمل داخل البوت تلقائياً)");
+            }
+        }
+    </script>
+</body>
+</html>
