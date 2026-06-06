@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>إدارة القيود - التزام برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            /* درجات الألوان الداكنة مأخوذة بالملي من الشاشة الرئيسية للبوت */
+            --bg-main: #0e1926; /* الخلفية الداكنة العميقة للتطبيق */
+            --bg-card: #172434; /* خلفية الكروت والحقول الزرقاء الداكنة */
+            --border-color: #23354d; /* لون الحواف الجانبية المتناسقة */
+            --text-white: #ffffff; /* النصوص الأساسية البيضاء */
+            --text-gray: #8fa0b5; /* النصوص الفرعية الرمادية الهادئة */
+            --accent-gold: #f59e0b; /* اللون الذهبي الخاص بـ (التزام) والخطط المميزة */
+            --blue-btn: #2563eb; /* اللون الأزرق للأزرار النشطة */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-white);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            direction: rtl;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        /* قسم الشعار المحدث ليتناسب مع الوضع الداكن */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        .logo-circle {
+            width: 100px;
+            height: 100px;
+            background: #ffffff;
+            border-radius: 50%;
+            border: 2px solid var(--accent-gold);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .logo-img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+        .logo-text-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-white);
+            margin-top: 8px;
+        }
+        .logo-text-title span {
+            color: var(--accent-gold);
+        }
+        .logo-text-sub {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-top: 2px;
+        }
+
+        /* أزرار الفترات الزمنية العلوية متوافقة مع الثيم الداكن */
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 2px 12px 2px;
+        }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-family: 'Cairo';
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            background-color: var(--blue-btn);
+            color: var(--text-white);
+            border-color: var(--blue-btn);
+        }
+
+        /* شبكة الفلاتر الداكنة */
+        .filters-grid {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .filter-row:last-child { margin-bottom: 0; }
+        .filter-item { flex: 1; }
+        .filter-item label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .filter-select, .filter-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-size: 13px;
+            background: var(--bg-main);
+            color: var(--text-white);
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+        }
+        .filter-input:focus, .filter-select:focus {
+            border-color: var(--accent-gold);
+        }
+
+        /* كروت المجموع الكلي مصفّرة بالكامل وموائمة للوحة التحكم الداكنة */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 4px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .stat-val { 
+            font-size: 14px; 
+            font-weight: 700; 
+            margin-bottom: 4px; 
+            color: var(--text-white); /* الأرقام باللون الأبيض النقي داخل الوضع الداكن */
+        }
+        .stat-lbl { font-size: 11px; color: var(--text-gray); font-weight: 600; }
+
+        /* شريط البحث الداكن */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-white);
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .search-box::placeholder {
+            color: var(--text-gray);
+        }
+        .search-icon-inside {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            color: var(--text-gray);
+        }
+
+        /* حاوية القيود الفخمة */
+        #entriesList { display: flex; flex-direction: column; gap: 12px; }
+        
+        .entry-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .time-stamp { font-size: 12px; color: var(--text-gray); }
+        .status-indicator { font-size: 12px; font-weight: 700; color: var(--accent-gold); }
+        .account-title { font-size: 16px; font-weight: 700; color: var(--text-white); }
+        .meta-text { font-size: 12px; color: var(--text-gray); }
+        .statement-text { font-size: 13px; color: var(--text-white); margin: 8px 0 14px 0; line-height: 1.4; }
+        .amount-num { font-size: 17px; font-weight: 800; color: var(--text-white); }
+
+        /* أزرار التحكم السفلية المتناسقة مع الأيقونات */
+        .bottom-actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 6px;
+        }
+        .circle-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+        }
+        .circle-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            background: var(--bg-main); 
+            color: var(--text-white); 
+            border: 1px solid var(--border-color);
+        }
+        .btn-lbl { font-size: 11px; font-weight: 600; color: var(--text-gray); margin-top: 5px; }
+        .loading-text { text-align: center; color: var(--text-gray); font-size: 13px; padding: 25px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="logo-section">
+            <div class="logo-box">
+                <div class="logo-circle">
+                    <img src="https://i.imgur.com/your_uploaded_logo_id.png" alt="التزام برو" class="logo-img" onerror="this.src='📊'">
+                </div>
+                <div class="logo-text-title">التزام <span>برو</span></div>
+                <div class="logo-text-sub">بوت تليجرام محاسبي ذكي</div>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="tab-btn active">يومي</button>
+            <button class="tab-btn">أسبوعي</button>
+            <button class="tab-btn">شهري</button>
+            <button class="tab-btn">سنوي</button>
+            <button class="tab-btn">الكل</button>
+            <button class="tab-btn">مخصص</button>
+        </div>
+
+        <div class="filters-grid">
+            <div class="filter-row">
+                <div class="filter-item"><label>الحساب</label><select class="filter-select"><option>الكل</option></select></div>
+                <div class="filter-item"><label>العملة</label><select class="filter-select"><option>الكل</option></select></div>
+                <div class="filter-item"><label>الموظف</label><select class="filter-select"><option>الكل</option></select></div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-item"><label>من تاريخ</label><input type="date" class="filter-input" value="2026-06-06"></div>
+                <div class="filter-item"><label>إلى تاريخ</label><input type="date" class="filter-input" value="2026-06-06"></div>
+                <div class="filter-item"><label>الصندوق</label><select class="filter-select"><option>الكل</option></select></div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box"><div class="stat-val">0</div><div class="stat-lbl">العدد</div></div>
+            <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي له</div></div>
+            <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي عليه</div></div>
+            <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي الرصيد</div></div>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" class="search-box" placeholder="ابحث عن قيد بالحساب، البيان أو التاريخ...">
+            <span class="search-icon-inside">🔍</span>
+        </div>
+
+        <div id="entriesList">
+            <div class="loading-text">🔄 جاري جلب القيود الحالية من النظام...</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram?.WebApp || null;
+        if (tg) { tg.ready(); tg.expand(); }
+    </script>
+</body>
+</html>
