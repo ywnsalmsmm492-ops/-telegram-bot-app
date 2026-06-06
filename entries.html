@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة القيود - التزام برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #f4f6fa; /* لون الخلفية الفاتحة للتطبيق من الصورة */
+            --bg-card: #ffffff; /* الخلفية البيضاء الناصعة للكروت والحقول */
+            --text-main: #0f2d4a; /* الكحلي الملكي الموحد لكل النصوص والأرقام حسب الصورة */
+            --text-secondary: #576b81; /* لون النصوص الفرعية الهادئة */
+            --border-color: #cbd5e1; /* لون حواف الحقول والإطارات */
+            --blue-active: #3b82f6; /* لون زر يومي الأزرق المريح */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            direction: rtl;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        /* الشعار الدائري الموحد */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 12px;
+            margin-top: 10px;
+        }
+        .logo-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-circle {
+            width: 100px;
+            height: 100px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(15, 45, 74, 0.05);
+            border: 1.5px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .logo-img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+        .logo-text-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 6px;
+            margin-bottom: 2px;
+        }
+        .logo-text-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* فلاتر الفترات الزمنية العلوية المطابقة للصورة */
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 2px 10px 2px;
+            margin-top: 14px;
+        }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 7px 16px;
+            border-radius: 10px;
+            font-family: 'Cairo';
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            background-color: var(--blue-active);
+            color: white;
+            border-color: var(--blue-active);
+        }
+
+        /* شبكة الفلاتر البيضاء ذات الحواف الدائرية المحاكية للصورة تماماً */
+        .filters-grid {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .filter-row:last-child { margin-bottom: 0; }
+        .filter-item {
+            flex: 1;
+        }
+        .filter-item label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .filter-select, .filter-input {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-size: 12px;
+            background: #ffffff;
+            color: var(--text-main);
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+        }
+        /* تكرار نفس شكل الفوكس الأسود الظاهر في الصورة عند اختيار حقل */
+        .filter-input:focus, .filter-select:focus {
+            border-color: #000000;
+            border-width: 1.5px;
+        }
+
+        /* كروت المجموع الكلي - تم توحيد اللون الكحلي وتصفير القيم بناءً على طلبك */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .stat-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 4px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+        .stat-val { 
+            font-size: 13px; 
+            font-weight: 700; 
+            margin-bottom: 4px; 
+            color: var(--text-main); /* توحيد اللون الكحلي للأرقام كلها بدون ألوان أخرى */
+        }
+        .stat-lbl { font-size: 10px; color: var(--text-secondary); font-weight: 600; }
+
+        /* شريط البحث الموحد */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+            text-align: right;
+        }
+        .search-icon-inside {
+            position: absolute;
+            left: 14px;
+            top: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* قائمة عرض المعاملات والقيود المتوافقة مع النظام الكحلي الموحد */
+        #entriesList { display: flex; flex-direction: column; gap: 12px; }
+        
+        .entry-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+            position: relative;
+        }
+
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .time-stamp {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .status-indicator {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main); /* جعل كلمة له/عليه كحلي موحد */
+        }
+
+        .account-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 4px 0;
+        }
+
+        .meta-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: 2px 0;
+        }
+
+        .statement-text {
+            font-size: 13px;
+            color: var(--text-main); /* توحيد لون نص البيان للكحلي */
+            margin: 6px 0 12px 0;
+            line-height: 1.4;
+        }
+
+        .amount-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            padding-bottom: 12px;
+        }
+        .amount-num {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main); /* توحيد لون المبالغ المالية للكحلي الموحد */
+        }
+
+        /* شريط التحكم الدائري المتناسق مع الكحلي الموحد */
+        .bottom-actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        .circle-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            gap: 5px;
+            flex: 1;
+        }
+        .circle-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            background: #f1f5f9; /* جعل خلفية الدوائر رمادية فاتحة متناسقة وموحدة */
+            color: var(--text-main); /* الأيقونات كحلي موحد */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.1s;
+        }
+        .circle-action-btn:active .circle-icon { transform: scale(0.9); }
+        .btn-lbl { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+        .loading-text { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 25px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- قسم الشعار المحاكي للصورة بالملي -->
+        <div class="logo-section">
+            <div class="logo-box">
+                <div class="logo-circle">
+                    <img src="https://i.imgur.com/your_uploaded_logo_id.png" alt="التزام برو" class="logo-img" onerror="this.src='📊'">
+                </div>
+                <div class="logo-text-title">التزام برو</div>
+                <div class="logo-text-sub">بوت تليجرام محاسبي ذكي</div>
+            </div>
+        </div>
+
+        <!-- فلاتر الفترات الزمنية العلوية المستوحاة بالكامل من الصورة -->
+        <div class="filter-tabs">
+            <button class="tab-btn active">يومي</button>
+            <button class="tab-btn">أسبوعي</button>
+            <button class="tab-btn">شهري</button>
+            <button class="tab-btn">سنوي</button>
+            <button class="tab-btn">الكل</button>
+            <button class="tab-btn">مخصص</button>
+        </div>
+
+        <!-- شبكة الفلاتر البيضاء المحدثة والنظيفة -->
+        <div class="filters-grid">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>الحساب</label>
+                    <select class="filter-select"><option>الكل</option></select>
+                </div>
+                <div class="filter-item">
+                    <label>العملة</label>
+                    <select class="filter-select"><option>الكل</option></select>
+                </div>
+                <div class="filter-item">
+                    <label>الموظف</label>
+                    <select class="filter-select"><option>الكل</option></select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>من تاريخ</label>
+                    <input type="date" class="filter-input" value="2026-06-06">
+                </div>
+                <div class="filter-item">
+                    <label>إلى تاريخ</label>
+                    <input type="date" class="filter-input" value="2026-06-06">
+                </div>
+                <div class="filter-item">
+                    <label>الصندوق</label>
+                    <select class="filter-select"><option>الكل</option></select>
+                </div>
+            </div>
+        </div>
+
+        <!-- كروت المجموع الكلي والإحصائيات - تم تصفيرها وتوحيدها باللون الكحلي بالكامل -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-val">0</div>
+                <div class="stat-lbl">العدد</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val">0.00</div>
+                <div class="stat-lbl">إجمالي له</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val">0.00</div>
+                <div class="stat-lbl">إجمالي عليه</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val">0.00</div>
+                <div class="stat-lbl">إجمالي الرصيد</div>
+            </div>
+        </div>
+
+        <!-- شريط البحث الأبيض الموحد -->
+        <div class="search-wrapper">
+            <input type="text" id="searchBar" class="search-box" placeholder="ابحث عن قيد بالحساب، البيان أو التاريخ...">
+            <span class="search-icon-inside">🔍</span>
+        </div>
+
+        <!-- قائمة القيود المحدثة بتصميم نظامك المالي الفاتح -->
+        <div id="entriesList">
+            <div class="loading-text">🔄 جاري جلب القيود الحالية من النظام...</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = null;
+        let allEntries = [];
+
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+            }
+        } catch (e) { console.log("خارج بيئة تليجرام"); }
+
+        window.onload = function() {
+            if (tg) {
+                tg.sendData(JSON.stringify({ action: 'load_entries', system: 'التزام_برو' }));
+            } else {
+                // محاكاة سحب البيانات من البايثون، تظهر باللون الكحلي الموحد الفخم عند التحميل
+                setTimeout(() => {
+                    renderEntries([
+                        {
+                            "id": 1, 
+                            "type": "receipt", 
+                            "amount": "3,000", 
+                            "currency": "يمني", 
+                            "description": "تحويل من المصروفات إلى الراجحي للصرافة - تحويل بين الصناديق", 
+                            "date": "2026-06-06", 
+                            "time": "PM 11:45",
+                            "account_name": "حساب الصناديق الداخلي",
+                            "employee": "يونس محمد عبده عثمان"
+                        }
+                    ]);
+                }, 500);
+            }
+        };
+
+        function renderEntries(entries) {
+            allEntries = entries;
+            const container = document.getElementById('entriesList');
+            container.innerHTML = '';
+
+            if(entries.length === 0) {
+                container.innerHTML = '<div class="loading-text">📭 لا توجد قيود مسجلة حالياً.</div>';
+                return;
+            }
+
+            entries.forEach(entry => {
+                const statusText = entry.type === 'receipt' ? 'له' : 'عليه';
+
+                const cardHtml = `
+                    <div class="entry-card">
+                        <div class="card-top-row">
+                            <span class="time-stamp">${entry.time} ${entry.date}</span>
+                            <span class="status-indicator">
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="account-title">${entry.account_name}</div>
+                        <div class="meta-text">الموظف: ${entry.employee}</div>
+                        
+                        <div class="statement-text">${entry.description}</div>
+                        
+                        <div class="amount-display">
+                            <div class="amount-num">${entry.amount} ${entry.currency}</div>
+                        </div>
+                        
+                        <!-- شريط الأزرار الدائرية الموحد بالكامل بدون تداخل ألوان مزعجة -->
+                        <div class="bottom-actions-row">
+                            <button class="circle-action-btn" onclick="triggerAction('whatsapp', ${entry.id})">
+                                <div class="circle-icon">💬</div>
+                                <span class="btn-lbl">واتساب</span>
+                            </button>
+                            <button class="circle-action-btn" onclick="triggerAction('print', ${entry.id})">
+                                <div class="circle-icon">🖨️</div>
+                                <span class="btn-lbl">طباعة</span>
+                            </button>
+                            <button class="circle-action-btn" onclick="triggerAction('sms', ${entry.id})">
+                                <div class="circle-icon">✉️</div>
+                                <span class="btn-lbl">SMS</span>
+                            </button>
+                            <button class="circle-action-btn" onclick="triggerAction('edit', ${entry.id})">
+                                <div class="circle-icon">✏️</div>
+                                <span class="btn-lbl">تعديل</span>
+                            </button>
+                            <button class="circle-action-btn" onclick="triggerAction('delete', ${entry.id})">
+                                <div class="circle-icon">🗑️</div>
+                                <span class="btn-lbl">حذف</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function triggerAction(actionName, id) {
+            if (actionName === 'delete') {
+                const confirmDelete = confirm("⚠️ هل أنت متأكد تماماً من رغبتك في حذف هذا القيد بشكل نهائي؟");
+                if (!confirmDelete) return;
+            }
+            if (tg) {
+                tg.sendData(JSON.stringify({ action: actionName + '_entry', entry_id: id, system: 'التزام_برو' }));
+            } else {
+                alert(`تنفيذ أمر [${actionName}] للقيد رقم: ` + id);
+            }
+        }
+    </script>
+</body>
+</html>
