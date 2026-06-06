@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اختبار - التزام برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .logo-circle {
+            width: 140px; height: 140px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 0 4px #131b24, 0 0 0 7px var(--gold-color), 0 8px 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .logo-circle svg {
+            width: 90%; height: 90%;
+        }
+
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-width { grid-column: span 2; }
+        
+        .btn-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 13px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .btn-item:active { transform: scale(0.95); background: #2a3a52; }
+
+        .btn-item.boxes-trigger {
+            background: var(--gold-gradient);
+            color: #0b141c;
+        }
+
+        .btn-item.all-services-trigger {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold-color);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-label {
+            display: block;
+            color: var(--hint-color);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .input-field, .select-field {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .select-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cca43b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 10px center;
+            background-size: 18px;
+        }
+        .btn-gold {
+            width: 100%;
+            padding: 14px;
+            background: var(--gold-gradient);
+            color: #0b141c;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .back-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            color: #ef4444;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 14px;
+            text-align: center;
+        }
+        .reading-input-group {
+            position: relative;
+        }
+        .reading-input-group .input-field {
+            padding-left: 50px;
+        }
+        .camera-btn {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--hint-color);
+        }
+        .previous-reading {
+            background: rgba(204, 164, 59, 0.08);
+            border: 1px solid rgba(204, 164, 59, 0.15);
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 12px;
+            color: var(--gold-color);
+            margin-bottom: 12px;
+            display: none;
+            text-align: center;
+        }
+        .msg-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="logo-section">
+            <div class="logo-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="55" r="46" fill="none" stroke="#102a43" stroke-width="4"/>
+                    <path d="M60 9 A 46 46 0 0 1 103 40" fill="none" stroke="#cca43b" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="35" y="28" width="26" height="34" rx="3" fill="#102a43"/>
+                    <rect x="39" y="32" width="18" height="8" fill="#bcccdc"/>
+                    <rect x="39" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="39" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="39" y="54" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="54" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="54" width="4" height="3" rx="0.5" fill="#cca43b"/>
+                    <rect x="65" y="42" width="5" height="20" fill="#102a43"/>
+                    <rect x="73" y="34" width="5" height="28" fill="#102a43"/>
+                    <rect x="81" y="25" width="5" height="37" fill="#102a43"/>
+                    <path d="M58 48 L68 38 L76 33 L85 22" fill="none" stroke="#cca43b" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M80 22 H85 V27" fill="none" stroke="#cca43b" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="48" y="40" width="28" height="34" rx="2" fill="#ffffff" stroke="#102a43" stroke-width="2"/>
+                    <line x1="53" y1="46" x2="71" y2="46" stroke="#102a43" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="53" y1="52" x2="67" y2="52" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="53" y1="57" x2="71" y2="57" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="53" y1="62" x2="61" y2="62" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <rect x="53" y="66" width="4" height="4" fill="#cca43b"/>
+                    <rect x="59" y="66" width="4" height="4" fill="#102a43"/>
+                    <rect x="65" y="66" width="4" height="4" fill="#102a43"/>
+                    <circle cx="82" cy="70" r="13" fill="#102a43" stroke="#ffffff" stroke-width="2"/>
+                    <path d="M75 70 L89 64 L86 76 L82 72 L79 74 Z" fill="#ffffff"/>
+                    <path d="M82 72 L86 64 L79 70 Z" fill="#bcccdc"/>
+                </svg>
+            </div>
+            <div style="font-weight: 800; font-size: 24px; color: #1e293b; margin-top: 8px;">
+                التزام <span style="color: var(--gold-color);">برو</span>
+            </div>
+            <div style="font-size: 12px; color: var(--hint-color); margin-top: -2px;">بوت تليجرام محاسبي ذكي</div>
+        </div>
+
+        <!-- الصفحات -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="showMsg('فتح الصناديق المحاسبية')">📦 عرض الصناديق المحاسبية</button>
+                <button class="btn-item" onclick="showMsg('إضافة حساب')">➕ إضافة حساب</button>
+                <button class="btn-item" onclick="showMsg('كشف حساب')">📋 كشف حساب</button>
+                <button class="btn-item full-width" onclick="showMsg('إضافة قيد')">📝 إضافة قيد</button>
+                <button class="btn-item" onclick="showMsg('الحسابات')">👤 الحسابات</button>
+                <button class="btn-item" onclick="showMsg('التقارير المالية')">📊 التقارير</button>
+                <button class="btn-item all-services-trigger" onclick="switchPage('servicesPage')">
+                    <span class="btn-text" style="color:white;">📂 جميع الخدمات</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="showMsg('سند قبض / صرف')">💵 سند قبض / صرف</button>
+                <button class="btn-item" onclick="showMsg('الحسابات')">👥 الحسابات</button>
+                <button class="btn-item" onclick="switchPage('utilityPage')">💡 فواتير الماء والكهرباء</button>
+                <button class="btn-item" onclick="showMsg('المخازن')">🏠 المخازن</button>
+                <button class="btn-item" onclick="showMsg('الفواتير')">🧾 الفواتير</button>
+                <button class="btn-item" onclick="showMsg('الحوالات')">📩 الحوالات</button>
+                <button class="btn-item" onclick="showMsg('متابعة الديون')">📈 الديون</button>
+                <button class="btn-item" onclick="showMsg('إدارة الموظفين')">👥 الموظفين</button>
+                <button class="btn-item full-width" onclick="showMsg('دعم فني')">💬 الدعم الفني</button>
+                <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للقائمة الرئيسية</button>
+            </div>
+        </div>
+
+        <!-- صفحة فاتورة الماء والكهرباء -->
+        <div id="utilityPage" class="page">
+            <div class="glass-card">
+                <div class="card-title">🧾 فاتورة ماء وكهرباء</div>
+                <div class="input-group">
+                    <label class="input-label">نوع الخدمة</label>
+                    <select id="serviceType" class="select-field">
+                        <option value="electric">⚡️ كهرباء</option>
+                        <option value="water">💧 ماء</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">👤 اسم المشترك</label>
+                    <input type="text" id="subscriberName" class="input-field" placeholder="أدخل اسم المشترك">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">🏦 الصندوق المالي</label>
+                    <select id="fundSelect" class="select-field">
+                        <option value="main">الصندوق الرئيسي</option>
+                    </select>
+                </div>
+                <div id="prevReadingDisplay" class="previous-reading">
+                    📟 القراءة السابقة: <strong id="prevReadingValue">0</strong>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">📸 القراءة الحالية</label>
+                    <div class="reading-input-group">
+                        <input type="number" id="currentReading" class="input-field" placeholder="أدخل القراءة الحالية">
+                        <button class="camera-btn" onclick="showMsg('فتح الكاميرا لتصوير العداد')" title="تصوير العداد">📷</button>
+                    </div>
+                </div>
+                <button class="btn-gold" onclick="showMsg('إصدار الفاتورة وحفظها PDF')">🧾 إصدار الفاتورة</button>
+                <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع للخدمات</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="msgToast" class="msg-toast"></div>
+
+    <script>
+        // محاكاة Telegram WebApp إذا لم تكن موجودة
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            window.Telegram = { WebApp: { ready: function(){}, expand: function(){}, initData: "", sendData: function(data){
+                showMsg("تم الإرسال للبوت: " + data);
+            }, showPopup: function(opts){ alert(opts.message); } } };
+        }
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            var target = document.getElementById(pageId);
+            if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+            if (pageId === 'utilityPage') {
+                // محاكاة إخفاء القراءة السابقة
+                document.getElementById('prevReadingDisplay').style.display = 'none';
+            }
+        }
+
+        function showMsg(text) {
+            var toast = document.getElementById('msgToast');
+            toast.textContent = '✅ ' + text;
+            toast.style.display = 'block';
+            setTimeout(function(){ toast.style.display = 'none'; }, 2000);
+            // محاولة الإرسال للبوت إذا كان موجوداً
+            try { tg.sendData(JSON.stringify({action: text})); } catch(e) {}
+        }
+    </script>
+</body>
+</html>
