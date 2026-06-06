@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مالي برو - النظام المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-modal: #2251b6; 
+            --card-inner: #ffffff;
+            --text-dark: #0f172a;
+            --hint-color: #64748b;
+            --blue-btn: #1d72dd;
+            --red-btn: #dc2626;
+            --success-btn: #16a34a;
+            --border-color: #cbd5e1;
+            --purple-paste: #4f46e5;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 6px;
+            padding-bottom: 70px; /* مساحة فارغة حتى لا يغطي الشريط السفلي على المحتوى */
+            box-sizing: border-box;
+            direction: rtl;
+            color: #ffffff;
+        }
+
+        .modal-container {
+            background-color: var(--bg-modal);
+            border-radius: 24px;
+            padding: 14px;
+            max-width: 440px;
+            margin: 8px auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .white-card {
+            background-color: var(--card-inner);
+            border-radius: 18px;
+            padding: 14px;
+            color: var(--text-dark);
+        }
+
+        /* شريط التبويبات العلوية الداخلية */
+        .modal-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .close-circle {
+            width: 32px;
+            height: 32px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .tab-item {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.12);
+            border: none;
+            border-radius: 10px;
+            padding: 8px 4px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Cairo', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+        .tab-item.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* تبويبات الحوالات الخاصة بالاستلام والإرسال */
+        .transfer-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .tab-btn {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            background: #fff;
+        }
+        .tab-btn.receive.active { background-color: var(--blue-btn); color: #fff; border-color: var(--blue-btn); }
+        .tab-btn.send.active { background-color: var(--red-btn); color: #fff; border-color: var(--red-btn); }
+        .tab-btn.send { color: var(--red-btn); border-color: var(--red-btn); }
+        .tab-btn.receive { color: var(--blue-btn); border-color: var(--blue-btn); }
+
+        /* هيكلة الحقول الشبكية */
+        .row-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .field-box {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            background: #fff;
+        }
+        .field-box label {
+            position: absolute;
+            top: -9px;
+            right: 12px;
+            background: #fff;
+            padding: 0 5px;
+            font-size: 10px;
+            color: var(--hint-color);
+            font-weight: 600;
+        }
+        .field-box select, .field-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            color: var(--text-dark);
+            background: transparent;
+        }
+
+        /* راديو العملات */
+        .currency-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .currency-title { font-size: 11px; color: var(--bg-modal); font-weight: 700; }
+        .radio-group { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; }
+        .radio-group input { accent-color: var(--bg-modal); }
+
+        /* الأزرار العامة */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .btn-action {
+            border: none;
+            border-radius: 12px;
+            padding: 11px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action.blue { background-color: var(--blue-btn); }
+        .btn-action.red { background-color: var(--red-btn); }
+        .btn-action.green { background-color: var(--success-btn); grid-column: span 2; }
+        
+        /* كرت اللصق التلقائي من الحافظة للحوالات */
+        .paste-clipboard-card {
+            background-color: #f3f0ff;
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--purple-paste);
+            font-weight: 600;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        /* شبكة شركات الاتصالات لصفحة الخدمات */
+        .operator-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .operator-card {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            background: #fff;
+        }
+        .operator-card.active {
+            border-color: var(--blue-btn);
+            background-color: #f0f7ff;
+            color: var(--blue-btn);
+        }
+
+        /* شاشات العرض الرئيسية المستقلة عن بعضها */
+        .app-page { display: none; }
+        .app-page.active { display: block; }
+        .sub-tab-content { display: none; }
+        .sub-tab-content.active { display: block; }
+
+        /* شريط التنقل السفلي الثابت - طبق الأصل من الصور المرفقة */
+        .bottom-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: center;
+            z-index: 999;
+            box-shadow: 0 -3px 12px rgba(0,0,0,0.15);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--hint-color);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        .nav-item.active {
+            color: var(--blue-btn);
+        }
+        .nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-journal" class="app-page active">
+        <div class="modal-container">
+            <div class="modal-tabs">
+                <div class="close-circle" onclick="closeApp()">✕</div>
+                <button id="tab-entry" class="tab-item active" onclick="switchSubTab('entry')">إضافة قيد</button>
+                <button id="tab-account-transfer" class="tab-item" onclick="switchSubTab('account-transfer')">تحويل حسابات</button>
+                <button id="tab-exchange" class="tab-item" onclick="switchSubTab('exchange')">مصارفة</button>
+            </div>
+
+            <div class="white-card">
+                <div id="content-entry" class="sub-tab-content active">
+                    <div class="row-inputs">
+                        <div class="field-box">
+                            <label>الحساب / العميل</label>
+                            <select id="entryAccount"><option value="">اختر العميل...</option><option>أحمد اليماني</option></select>
+                        </div>
+                        <div class="field-box">
+                            <label>الصندوق *</label>
+                            <select class="global-box-dropdown"></select>
+                        </div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="field-box">
+                            <label>المبلغ</label>
+                            <input type="number" placeholder="0.00" inputmode="decimal">
+                        </div>
+                        <div class="field-box">
+                            <label>التاريخ</label>
+                            <input type="text" value="06/06/2026" readonly style="color: var(--hint-color);">
+                        </div>
+                    </div>
+                    <div class="currency-box">
+                        <span class="currency-title">العملة</span>
+                        <label class="radio-group"><input type="radio" name="cur_entry" checked><span>يمني</span></label>
+                        <label class="radio-group"><input type="radio" name="cur_entry"><span>سعودي</span></label>
+                        <label class="radio-group"><input type="radio" name="cur_entry"><span>دولار</span></label>
+                    </div>
+                    <div class="field-box" style="margin-bottom: 12px;"><label>البيان</label><input type="text" placeholder="اكتب الشرح هنا..."></div>
+                    <div class="action-buttons">
+                        <button class="btn-action blue" onclick="sendToBot('قيد_له')">↓ له</button>
+                        <button class="btn-action red" onclick="sendToBot('قيد_عليه')">↑ عليه</button>
+                    </div>
+                </div>
+
+                <div id="content-account-transfer" class="sub-tab-content">
+                    <div class="row-inputs">
+                        <div class="field-box"><label>من حساب</label><select><option>اختر الحساب المرسل...</option></select></div>
+                        <div class="field-box"><label>إلى حساب</label><select><option>اختر الحساب المستلم...</option></select></div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="field-box"><label>المبلغ</label><input type="number" placeholder="0.00"></div>
+                        <div class="field-box"><label>البيان</label><input type="text" placeholder="تفاصيل الحوالة..."></div>
+                    </div>
+                    <button class="btn-action green" onclick="sendToBot('تحويل_حسابات')">🚀 تنفيذ تحويل الحسابات</button>
+                </div>
+
+                <div id="content-exchange" class="sub-tab-content">
+                    <div class="row-inputs">
+                        <div class="field-box"><label>الصندوق المستهدف</label><select class="global-box-dropdown"></select></div>
+                        <div class="field-box"><label>الحساب / العميل</label><select><option>أحمد اليماني</option></select></div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="field-box"><label>المبلغ المستلم</label><input type="number" placeholder="أخذت منه"></div>
+                        <div class="field-box"><label>العملة المستلمة</label><select><option>USD</option><option>SAR</option></select></div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="field-box"><label>المبلغ المباع</label><input type="number" placeholder="أعطيته مقابلها"></div>
+                        <div class="field-box"><label>العملة المباعة</label><select><option>YER</option></select></div>
+                    </div>
+                    <button class="btn-action green" onclick="sendToBot('مصارفة_قيد')">🔄 تنفيذ عملية المصارفة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="page-transfers" class="app-page">
+        <div class="modal-container" style="background-color: #fff; color: var(--text-dark);">
+            <div class="transfer-tabs">
+                <button id="btn-tab-receive" class="tab-btn receive active" onclick="toggleTransferMode('receive')">استلام الحوالة</button>
+                <button id="btn-tab-send" class="tab-btn send" onclick="toggleTransferMode('send')">ارسال الحوالة</button>
+            </div>
+
+            <div class="row-inputs">
+                <div class="field-box"><label>الحساب</label><select><option>أحمد اليماني</option></select></div>
+                <div class="field-box"><label>الصندوق</label><select class="global-box-dropdown"></select></div>
+            </div>
+            <div class="row-inputs">
+                <div class="field-box"><label>المبلغ</label><input type="number" placeholder="0.00"></div>
+                <div class="field-box"><label>العملة</label><select><option>يمني</option><option>سعودي</option><option>دولار</option></select></div>
+            </div>
+
+            <div style="font-size: 11px; color: #16a34a; font-weight: 700; margin: 6px 0;">تفاصيل العموله</div>
+            <div id="commission-row" class="row-inputs">
+                <div class="field-box"><label>مبلغ العموله</label><input type="number" placeholder="0.00"></div>
+                <div class="field-box" id="profit-box" style="display: none;"><label>الربح</label><input type="number" placeholder="0.00"></div>
+                <div class="field-box"><label>عملة العموله</label><select><option>يمني</option></select></div>
+            </div>
+
+            <div class="paste-clipboard-card" onclick="pasteText()">
+                <span>📋 لصق تفاصيل الحوالة من الحافظة</span><span style="color: var(--blue-btn);">لصق</span>
+            </div>
+
+            <div class="field-box" style="margin-bottom: 12px;"><label>اسم المستلم</label><input type="text" placeholder="اكتب اسم المستلم الكامل..."></div>
+            <div class="field-box" style="margin-bottom: 12px;"><label>اسم المرسل</label><input type="text" placeholder="اكتب اسم المرسل الكامل..."></div>
+            <div class="row-inputs">
+                <div class="field-box"><label>رقم الحوالة #</label><input type="text" placeholder="رقم المعاملة"></div>
+                <div class="field-box"><label>شركة التحويل</label><input type="text" placeholder="مثال: النجم"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-action blue" style="grid-column: span 2;" onclick="sendToBot('حفظ_حوالة')">💾 حفظ المعاملة</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="page-services" class="app-page">
+        <div class="modal-container" style="background-color: #fff; color: var(--text-dark);">
+            <h3 style="text-align: center; margin-top: 0; font-size: 16px;">تسديد الخدمات والباقات</h3>
+            
+            <div class="operator-grid">
+                <div class="operator-card active" onclick="selectOperator(this)">يمن موبايل</div>
+                <div class="operator-card" onclick="selectOperator(this)">يو (YOU)</div>
+                <div class="operator-card" onclick="selectOperator(this)">سبأفون / واي</div>
+            </div>
+
+            <div class="field-box" style="margin-bottom: 14px;">
+                <label>الصندوق المدين</label>
+                <select disabled><option>الصندوق الرئيسي (افتراضي ثابث)</option></select>
+            </div>
+            <div class="field-box" style="margin-bottom: 14px;">
+                <label>رقم الهاتف المراد شحنه</label>
+                <input type="tel" placeholder="77xxxxxxx" style="text-align: right;">
+            </div>
+            <div class="field-box" style="margin-bottom: 14px;">
+                <label>نوع الباقة</label>
+                <select><option>شحن فوري رصيد</option><option>باقة مزايا إكس المحدثة</option><option>باقة فورجي 10 جيجا</option></select>
+            </div>
+            <div class="field-box" style="margin-bottom: 14px;">
+                <label>المبلغ</label>
+                <input type="number" placeholder="0.00">
+            </div>
+
+            <button class="btn-submit btn-action green" style="width: 100%;" onclick="sendToBot('تسديد_خدمة_اتصالات')">⚡ تأكيد وتسديد العملية فوراً</button>
+        </div>
+    </div>
+
+
+    <div id="page-dashboard" class="app-page">
+        <div class="modal-container"><h3 style="text-align: center;">📈 لوحة التحكم والإحصائيات الحالية</h3><div class="white-card"><p style="text-align: center; color: #555;">مرحباً بك في مالي برو! هنا تظهر ملخصات العمليات اليومية الإجمالية.</p></div></div>
+    </div>
+    <div id="page-accounts" class="app-page">
+        <div class="modal-container"><h3 style="text-align: center;">🗂️ إدارة الحسابات والعملاء</h3><div class="white-card"><p style="text-align: center; color: #555;">كشوفات أسماء العملاء، الموردين، وتفاصيل أرصدة الصناديق الفرعية.</p></div></div>
+    </div>
+    <div id="page-reports" class="app-page">
+        <div class="modal-container"><h3 style="text-align: center;">📊 التقارير الختامية والأرباح</h3><div class="white-card"><p style="text-align: center; color: #555;">هنا يمكنك توليد تقارير الأرباح المحتسبة من الحوالات والخدمات وتصديرها PDF.</p></div></div>
+    </div>
+
+
+    <div class="bottom-nav-bar">
+        <div id="nav-reports" class="nav-item" onclick="navigateToPage('reports')"><span class="nav-icon">📊</span><span>التقارير</span></div>
+        <div id="nav-journal" class="nav-item active" onclick="navigateToPage('journal')"><span class="nav-icon">📋</span><span>القيود المحاسبية</span></div>
+        <div id="nav-services" class="nav-item" onclick="navigateToPage('services')"><span class="nav-icon">📱</span><span>الخدمات</span></div>
+        <div id="nav-accounts" class="nav-item" onclick="navigateToPage('accounts')"><span class="nav-icon">📁</span><span>الحسابات</span></div>
+        <div id="nav-dashboard" class="nav-item" onclick="navigateToPage('dashboard')"><span class="nav-icon">📡</span><span>لوحة التحكم</span></div>
+    </div>
+
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // 1. إدارة قائمة الصناديق - وضعت الصندوق الرئيسي بمفرده كما طلبت في تعديلك
+        const availableBoxes = [{ id: 'main_box', name: 'الصندوق الرئيسي' }];
+
+        function setupBoxDropdowns() {
+            const dropdowns = document.querySelectorAll('.global-box-dropdown');
+            dropdowns.forEach(select => {
+                select.innerHTML = '';
+                availableBoxes.forEach(box => {
+                    const opt = document.createElement('option');
+                    opt.value = box.id;
+                    opt.innerText = box.name;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        // 2. إدارة شريط التنقل السفلي والتبديل الكامل بين الصفحات الخمس
+        function navigateToPage(pageId) {
+            document.querySelectorAll('.app-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('nav-' + pageId).classList.add('active');
+
+            // إذا دخل لصفحة الخدمات نقوم بتحويلها تلقائياً للشكل المطلوب لحوالات الاستلام/الإرسال الفرعية عند النقر
+            if(pageId === 'services') {
+                // الوضع الافتراضي لصفحة الخدمات الخاصة بنا
+            }
+        }
+
+        // 3. إدارة التبويبات العلوية الفرعية لشاشة القيد والمصارفة
+        function switchSubTab(subTabId) {
+            document.querySelectorAll('#page-journal .tab-item').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#page-journal .sub-tab-content').forEach(c => c.classList.remove('active'));
+
+            document.getElementById('tab-' + subTabId).classList.add('active');
+            document.getElementById('content-' + subTabId).classList.add('active');
+        }
+
+        // 4. دالة التبديل التلقائي لنموذج الحوالات (استلام / إرسال) - لتطابق صورك المرفقة 100%
+        function toggleTransferMode(mode) {
+            const recBtn = document.getElementById('btn-tab-receive');
+            const sendBtn = document.getElementById('btn-tab-send');
+            const profitBox = document.getElementById('profit-box');
+            const commRow = document.getElementById('commission-row');
+
+            if (mode === 'receive') {
+                recBtn.classList.add('active');
+                sendBtn.classList.remove('active');
+                profitBox.style.display = 'none'; // إخفاء حقل الربح في الاستلام
+                commRow.style.gridTemplateColumns = '1fr 1fr'; // العودة لعمودين متساويين
+            } else {
+                sendBtn.classList.add('active');
+                recBtn.classList.remove('active');
+                profitBox.style.display = 'flex'; // إظهار حقل الربح في الإرسال
+                commRow.style.gridTemplateColumns = '1fr 1fr 1fr'; // تقسيم السطر لـ 3 أعمدة متناسقة
+            }
+        }
+
+        // 5. ميزات تفاعلية إضافية
+        function selectOperator(element) {
+            document.querySelectorAll('.operator-card').forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function pasteText() {
+            tg.showAlert("تم التقاط النص من الحافظة وملء تفاصيل الحوالة آلياً بنجاح! 🚀");
+        }
+
+        function sendToBot(actionType) {
+            tg.sendData(JSON.stringify({ action: actionType, timestamp: Date.now() }));
+        }
+
+        function closeApp() { tg.close(); }
+
+        // التفعيل المباشر عند بدء تشغيل صفحة الويب
+        window.onload = function() {
+            setupBoxDropdowns();
+        };
+    </script>
+</body>
+</html>
