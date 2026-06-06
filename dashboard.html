@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التزام برو - لوحة التحكم الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+        .settings-top-trigger:active {
+            transform: scale(0.9);
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s ease-in-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 12px;
+            margin-top: 10px;
+        }
+        .logo-box {
+            width: 100px;
+            height: 100px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid var(--gold-color);
+            font-weight: 800;
+            color: #0b141c;
+            font-size: 16px;
+            text-align: center;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+        .logo-icon {
+            font-size: 36px;
+            margin-bottom: 2px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold-color);
+            margin: 6px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .stat-label { color: var(--hint-color); }
+        .stat-value { font-weight: 700; }
+
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: right;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            box-sizing: border-box;
+            text-decoration: none;
+        }
+        .btn-item:active {
+            transform: scale(0.98);
+            background: #334155;
+        }
+        .btn-icon {
+            font-size: 18px;
+        }
+        .btn-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .btn-item.boxes-trigger {
+            background: linear-gradient(135deg, #cca43b, #a37f29);
+            border: none;
+        }
+        .btn-item.boxes-trigger .btn-text {
+            color: #0b141c;
+            font-weight: 700;
+        }
+
+        .btn-item.all-services-trigger {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+        }
+        .btn-item.all-services-trigger:active {
+            background: #1e40af;
+        }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+        .back-btn:active {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .box-container-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .box-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+        .box-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold-color);
+        }
+        .box-card-icon {
+            font-size: 20px;
+        }
+        .box-balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .box-balance-converted {
+            font-size: 12px;
+            color: var(--success-color);
+            margin-top: 8px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            padding-top: 8px;
+            text-align: left;
+        }
+        .box-card-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .box-action-sub-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px;
+            border-radius: 10px;
+            color: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+        }
+        .box-action-sub-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <!-- زر الإعدادات -->
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <!-- الشعار الرئيسي -->
+        <div class="logo-section">
+            <div class="logo-box">
+                <span class="logo-icon">📊</span>
+                التزام برو
+            </div>
+        </div>
+
+        <!-- قائمة الإعدادات المنسدلة -->
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ إعدادات وتفضيلات النظام:</div>
+            <div class="grid-layout">
+                <button class="btn-item" onclick="sendAction('edit_profile')">
+                    <span class="btn-icon">📝</span><span class="btn-text">تعديل البيانات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('change_password')">
+                    <span class="btn-icon">🔑</span><span class="btn-text">تغيير كلمة المرور</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('set_main_currency')">
+                    <span class="btn-icon">💱</span><span class="btn-text">العملة الافتراضية</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('toggle_notifications')">
+                    <span class="btn-icon">🔔</span><span class="btn-text">إشعارات الحساب</span>
+                </button>
+                <button class="btn-item full-width" style="background: rgba(204,164,59,0.1); border: 1px solid var(--gold-color);" onclick="sendAction('settings')">
+                    <span class="btn-icon">⚙️</span><span class="btn-text" style="color: var(--gold-color);">إجراء إعدادات عامة</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- كرت الإحصائيات والمعلومات الثابتة -->
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div style="font-size: 12px; margin-bottom: 6px;">🎁 نقاطك: <strong style="color: var(--gold-color);">0</strong></div>
+            
+            <div class="stats-title">📌 الإحصائيات:</div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color:var(--danger-color);">0</span></div>
+                <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">📝 المعاملات</span><span class="stat-value">0</span></div>
+            </div>
+        </div>
+
+        <!-- الصفحة الرئيسية -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">
+                    <span class="btn-icon">🏦</span><span class="btn-text">📦 عرض الصناديق المحاسبية</span>
+                </button>
+                
+                <button class="btn-item" onclick="sendAction('add_account')">
+                    <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('account_statement')">
+                    <span class="btn-icon">📋</span><span class="btn-text">كشف حساب</span>
+                </button>
+                <button class="btn-item full-width" onclick="sendAction('add_entry')">
+                    <span class="btn-icon">📝</span><span class="btn-text">إضافة قيد</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('accounts')">
+                    <span class="btn-icon">👤</span><span class="btn-text">الحسابات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('reports')">
+                    <span class="btn-icon">📊</span><span class="btn-text">التقارير</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('redeem_points')">
+                    <span class="btn-icon">🎁</span><span class="btn-text">استبدال النقاط</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('referral_link')">
+                    <span class="btn-icon">🔗</span><span class="btn-text">رابط الإحالة</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('main_menu')">
+                    <span class="btn-icon">🔙</span><span class="btn-text">القائمة الرئيسية</span>
+                </button>
+                
+                <button class="btn-item all-services-trigger" onclick="switchPage('servicesPage')">
+                    <span class="btn-icon">📂</span><span class="btn-text" style="color: white;">جميع الخدمات</span>
+                </button>
+                
+                <button class="btn-item full-width" onclick="sendAction('control_panel')">
+                    <span class="btn-icon">📱</span><span class="btn-text">لوحة التحكم</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- صفحة الصناديق المحاسبية -->
+        <div id="boxesPage" class="page">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 4px; padding-right: 4px;">📋 كشف الصناديق الحالية:</div>
+            
+            <div class="box-container-card">
+                <div class="box-header-row">
+                    <div class="box-card-title">الصندوق الرئيسي</div>
+                    <div class="box-card-icon">🏦</div>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الريال اليمني</span>
+                    <span style="color: var(--success-color);">لكم 0.0 يمني</span>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الريال السعودي</span>
+                    <span style="color: var(--danger-color);">عليكم 0.0 سعودي</span>
+                </div>
+                <div class="box-balance-item">
+                    <span style="color: var(--hint-color);">الدولار الأمريكي</span>
+                    <span style="color: var(--danger-color);">عليكم 0.0 دولار</span>
+                </div>
+                <div class="box-balance-converted">
+                    الرصيد بالمقابل لكم 0.0 يمني
+                </div>
+                
+                <div class="box-card-actions">
+                    <button class="box-action-sub-btn" onclick="sendAction('box_edit')">🖊️ تعديل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_transfer')">📈 تحويل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_exchange')">🛒 صرف</button>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="switchPage('mainPage')">
+                <span>↩️</span> رجوع للوحة التحكم الرئيسية
+            </button>
+        </div>
+
+        <!-- صفحة جميع الخدمات الجديدة -->
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="sendAction('receipt_payment')">
+                    <span class="btn-icon">💵</span><span class="btn-text">سند قبض / صرف</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('accounts')">
+                    <span class="btn-icon">👥</span><span class="btn-text">الحسابات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('currency_exchange')">
+                    <span class="btn-icon">💱</span><span class="btn-text">مصارفة</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('transfer_accounts')">
+                    <span class="btn-icon">🔄</span><span class="btn-text">تحويل بين الحسابات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('items')">
+                    <span class="btn-icon">📦</span><span class="btn-text">الأصناف</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('warehouses')">
+                    <span class="btn-icon">🏠</span><span class="btn-text">المخازن</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('electricity_bills')">
+                    <span class="btn-icon">💡</span><span class="btn-text">فواتير الكهرباء</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('invoices')">
+                    <span class="btn-icon">🧾</span><span class="btn-text">الفواتير</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('reports')">
+                    <span class="btn-icon">📊</span><span class="btn-text">التقارير</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('transfers')">
+                    <span class="btn-icon">📩</span><span class="btn-text">الحوالات</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('debt_followup')">
+                    <span class="btn-icon">📈</span><span class="btn-text">متابعة الديون</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('staff_management')">
+                    <span class="btn-icon">👥</span><span class="btn-text">إدارة الموظفين</span>
+                </button>
+                
+                <button class="btn-item" onclick="callSupport()">
+                    <span class="btn-icon">💬</span><span class="btn-text">الدعم الفني المباشر</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('support')">
+                    <span class="btn-icon">🤝</span><span class="btn-text">تذكرة دعم فني</span>
+                </button>
+
+                <button class="back-btn" onclick="switchPage('mainPage')">
+                    <span>↩️</span> رجوع للقائمة الرئيسية
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // كود تشغيل وتجهيز بيئة تيليجرام التلقائي
+        var tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) {
+            try {
+                tg.ready();
+                tg.expand();
+            } catch(e) { console.log(e); }
+        }
+
+        // فتح وإغلاق قائمة الإعدادات المنسدلة
+        function toggleSettingsDropdown() {
+            var dropdown = document.getElementById('settingsDropdown');
+            if(dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+            }
+        }
+
+        // التنقل والتحويل بين الصفحات (تعمل الآن في أي مكان!)
+        function switchPage(pageId) {
+            document.getElementById('settingsDropdown').style.display = 'none';
+            var pages = document.querySelectorAll('.page');
+            for (var i = 0; i < pages.length; i++) {
+                pages[i].classList.remove('active');
+            }
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo(0,0); // الصعود لأعلى الصفحة تلقائياً
+            }
+        }
+
+        // إرسال البيانات (ذكية: تعمل في المتصفح للتجربة، وتعمل في البوت عند الرفع)
+        function sendAction(actionName) {
+            var dataPayload = JSON.stringify({ action: actionName, system: 'التزام_برو' });
+            
+            // 1. إذا كان الفتح داخل تطبيق تيليجرام
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "") {
+                try {
+                    window.Telegram.WebApp.sendData(dataPayload);
+                } catch (err) {
+                    alert("خطأ أثناء الإرسال للبوت: " + err.message);
+                }
+            } 
+            // 2. إذا كنت تجرب الآن في المتصفح العادي قبل الرفع للبوت
+            else {
+                alert("👍 وضع التجربة في المتصفح:\nتم الضغط على زر الإجراء: [" + actionName + "]\n\n(عند رفع الملف للبوت، سيتم إرسال هذا الأمر مباشرة إلى البايثون دون ظهور هذه النافذة).");
+            }
+        }
+
+        // زر الاتصال بالدعم الفني المباشر
+        function callSupport() {
+            var phoneNumber = "775154169";
+            var dataPayload = JSON.stringify({ action: 'contact_support', phone: phoneNumber, system: 'التزام_برو' });
+
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "") {
+                window.Telegram.WebApp.sendData(dataPayload);
+            } else {
+                alert("وضع التجربة: سيتم الانتقال للاتصال بالرقم: " + phoneNumber);
+            }
+            window.location.href = "tel:" + phoneNumber;
+        }
+    </script>
+</body>
+</html>
