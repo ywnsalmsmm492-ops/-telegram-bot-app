@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>التزام برو - لوحة التحكم الشاملة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --bg-card-dark: #172434;
+            --border-color: #23354d;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --text-gray: #8fa0b5;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --blue-btn: #2563eb;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .error-banner {
+            background: rgba(204, 164, 59, 0.15);
+            border: 1px solid var(--gold-color);
+            color: var(--gold-color);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .system-status-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--hint-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-left: 5px;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 45px; 
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        
+        /* تصميم الدائرة الشبيه باللوجو الرسمي الدائري */
+        .logo-circle {
+            width: 95px;
+            height: 95px;
+            background-color: var(--bg-card);
+            border-radius: 50%;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--gold-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            font-size: 28px;
+            color: var(--gold-color);
+            position: relative;
+        }
+        .logo-subtext {
+            font-size: 9px;
+            color: var(--text-color);
+            font-weight: bold;
+            margin-top: -2px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 13px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: right;
+            color: #f8fafc;
+            font-family: 'Cairo';
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-item:active { background: #2a3a52; }
+        .btn-icon { font-size: 18px; }
+        .btn-text { font-size: 13px; font-weight: 600; }
+
+        .btn-item.boxes-trigger { background: var(--gold-gradient); border: none; }
+        .btn-item.boxes-trigger .btn-text { color: #0b141c; font-weight: 700; }
+        .btn-item.all-services-trigger { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; }
+        .btn-item.renew-trigger { background: var(--gold-gradient); border: none; padding: 13px 12px; margin-top: 5px; }
+        .btn-item.renew-trigger .btn-text { color: #0b141c; font-weight: 700; width: 100%; text-align: center; }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+
+        /* حقول الإدخال المحدثة والمبوبة */
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .input-group-custom label {
+            position: absolute;
+            top: -9px;
+            right: 15px;
+            background: var(--bg-dark);
+            padding: 0 6px;
+            font-size: 11px;
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+        .input-field-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2px 12px;
+        }
+        .input-field-wrapper input, .input-field-wrapper select, .input-field-wrapper textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 10px 0;
+            color: white;
+            font-family: 'Cairo';
+            font-size: 13px;
+            outline: none;
+        }
+        .field-icon-left {
+            color: var(--gold-color);
+            font-size: 16px;
+            margin-left: 8px;
+        }
+        .contact-btn-circle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+        /* تصميم أزرار التبديل الـ Switches */
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.02);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .switch-label-desc {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .switch-title { font-size: 13px; font-weight: 600; color: #ffffff; }
+        .switch-desc { font-size: 10px; color: var(--hint-color); max-width: 280px; }
+        
+        .switch-toggle {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+        .switch-toggle input { opacity: 0; width: 0; height: 0; }
+        .slider-round {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569; transition: .3s; border-radius: 24px;
+        }
+        .slider-round:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider-round { background-color: var(--success-color); }
+        input:checked + .slider-round:before { transform: translateX(22px); }
+
+        /* تصميم صفحة إعدادات التسعير */
+        .pricing-tabs-row {
+            display: flex;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+        .pricing-tab {
+            flex: 1; text-align: center; padding: 8px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-gray); transition: 0.2s;
+        }
+        .pricing-tab.active {
+            background: var(--bg-card); color: var(--gold-color); border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* تصميم صفحة القيود الحسابية المطور */
+        .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; }
+        .tab-btn {
+            background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            padding: 6px 14px; border-radius: 10px; font-family: 'Cairo'; font-size: 12px; color: var(--text-gray); cursor: pointer; flex: 1; text-align: center;
+        }
+        .tab-btn.active { background-color: var(--blue-btn); color: white; border-color: var(--blue-btn); }
+
+        .filters-grid {
+            background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 12px; margin-bottom: 12px;
+        }
+        .filter-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .filter-row:last-child { margin-bottom: 0; }
+        .filter-item { flex: 1; position: relative; }
+        .filter-item label { display: block; font-size: 11px; color: var(--text-gray); margin-bottom: 4px; text-align: center; font-weight: 600; }
+        .filter-select, .filter-input {
+            width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 10px;
+            font-family: 'Cairo'; font-size: 12px; background: var(--bg-dark); color: white; box-sizing: border-box; text-align: center; outline: none;
+        }
+
+        .search-wrapper { position: relative; margin-bottom: 12px; }
+        .search-box {
+            width: 100%; padding: 10px 12px 10px 35px; background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            border-radius: 10px; color: white; font-family: 'Cairo'; font-size: 12px; box-sizing: border-box; outline: none; text-align: right;
+        }
+        .search-icon-inside { position: absolute; left: 12px; top: 11px; color: var(--hint-color); font-size: 14px; }
+
+        /* بطاقات إحصائيات القيود الأربعة */
+        .stats-summary-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .summary-card-item {
+            background: var(--bg-card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 2px;
+            text-align: center;
+        }
+        .summary-card-title { font-size: 10px; color: var(--text-gray); margin-bottom: 2px; }
+        .summary-card-val { font-size: 11px; font-weight: 700; }
+
+        /* قائمة قيود العمليات */
+        .entry-card { background: var(--bg-card-dark); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 10px;}
+        .entry-top-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--hint-color); }
+        .entry-emp-name { font-size: 10px; color: var(--text-gray); margin: 2px 0; }
+        .entry-title-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+        .entry-title-text { font-weight: 700; font-size: 13px; }
+        .entry-desc-text { font-size: 12px; color: var(--text-gray); margin-bottom: 8px; }
+        
+        .bottom-actions-row { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 6px; gap: 4px; }
+        .circle-action-btn { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; flex: 1; padding: 2px 0; }
+        .circle-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; font-size: 13px; transition: 0.2s; }
+        .circle-action-btn:active .circle-icon { background: var(--bg-card); }
+        .circle-label { font-size: 10px; color: var(--text-gray); margin-top: 4px; font-family: 'Cairo'; }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="error-banner">🔄 وضع التجربة النشط: يمكنك اختبار كافة الأزرار والصفحات هنا مباشرة على الهاتف.</div>
+
+        <div class="system-status-bar">
+            <div><span class="status-dot"></span> حالة النظام: متصل بالخادم المحاسبي</div>
+            <div>التزام برو v3.2</div>
+        </div>
+        
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <div class="logo-section">
+            <div class="logo-circle">
+                📊
+                <div class="logo-subtext">📈 SMART</div>
+            </div>
+            <div style="font-family: 'Cairo'; font-weight: 800; font-size: 24px; color: #ffffff; margin-top: 8px;">
+                التزام <span style="color: var(--gold-color);">برو</span>
+            </div>
+            <div style="font-size: 11px; color: var(--hint-color); margin-top: -2px;">بوت تليجرام محاسبي ذكي</div>
+        </div>
+
+        <!-- القائمة المنسدلة للإعدادات بعد نقل الميزات إليها بالكامل -->
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ إعدادات التحكم:</div>
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('edit_profile')">📝 تعديل البيانات</button>
+                <button class="btn-item" onclick="smartSendData('change_password')">🔑 كلمة المرور</button>
+                <button class="btn-item" onclick="smartSendData('add_employee')">👥 إضافة موظف جديد</button>
+                <button class="btn-item" style="background: rgba(239, 68, 68, 0.2); border-color: var(--danger-color);" onclick="smartSendData('logout_system')"><span style="color: var(--danger-color);">🚪 تسجيل الخروج</span></button>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color: var(--danger-color);">0</span></div>
+            </div>
+        </div>
+
+        <!-- ================= الصفحة الرئيسية ================= -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">📦 عرض الصناديق المحاسبية</button>
+                
+                <button class="btn-item" onclick="switchPage('addAccountPage')">
+                    <span class="btn-icon">👤</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                
+                <button class="btn-item" onclick="switchPage('entriesPage')">
+                    <span class="btn-icon">📊</span><span class="btn-text">إدارة القيود اليومية</span>
+                </button>
+
+                <button class="btn-item" onclick="smartSendData('account_statement')">📋 كشف حساب</button>
+                <button class="btn-item" onclick="switchPage('addEntryPage')">📝 إضافة قيد</button>
+                <button class="btn-item" onclick="smartSendData('reports')">📊 التقارير المالية</button>
+                <button class="btn-item" onclick="switchPage('pricingSettingsPage')">⚙️ إعدادات التسعير</button>
+                <button class="btn-item full-width" onclick="switchPage('servicesPage')">📂 جميع الخدمات المتاحة</button>
+            </div>
+            
+            <button class="btn-item renew-trigger" onclick="smartSendData('renew_subscription')">
+                <span class="btn-text">💳 تجديد الاشتراك الآن</span>
+            </button>
+        </div>
+
+        <!-- ================= واجهة إضافة حساب (المطورة بالكامل طبقاً لـ 1000730907.png) ================= -->
+        <div id="addAccountPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 18px;">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center; margin-bottom: 4px;">👥 إضافة حساب جديد</h3>
+                <p style="font-size: 11px; color: var(--hint-color); text-align: center; margin-top: 0; margin-bottom: 20px;">يرجى تعبئة البيانات بدقة - التصنيف اختياري</p>
+                
+                <!-- حقل اسم الحساب -->
+                <div class="input-group-custom">
+                    <label>اسم الحساب</label>
+                    <div class="input-field-wrapper">
+                        <input type="text" id="accName" placeholder="أدخل اسم الحساب بالكامل">
+                        <span class="field-icon-left">👤</span>
+                    </div>
+                </div>
+                
+                <!-- حقل رقم الهاتف + زر جهات الاتصال -->
+                <div class="input-group-custom">
+                    <label>رقم الهاتف</label>
+                    <div class="input-field-wrapper">
+                        <div class="contact-btn-circle" onclick="smartSendData('open_contacts')" title="جهات الاتصال">📇</div>
+                        <input type="tel" id="accPhone" placeholder="أدخل رقم الهاتف">
+                        <span class="field-icon-left">📞</span>
+                    </div>
+                </div>
+
+                <!-- حقل التصنيف -->
+                <div class="input-group-custom">
+                    <label>التصنيف (اختياري)</label>
+                    <div class="input-field-wrapper">
+                        <select id="accCategory">
+                            <option value="">بدون تصنيف</option>
+                            <option value="عملاء">عملاء وموردين</option>
+                            <option value="صناديق">صناديق فرعية</option>
+                        </select>
+                        <span class="field-icon-left">🔺</span>
+                    </div>
+                </div>
+
+                <!-- حقل الملاحظات -->
+                <div class="input-group-custom">
+                    <label>ملاحظات</label>
+                    <div class="input-field-wrapper" style="align-items: flex-start; padding: 6px 12px;">
+                        <textarea id="accNotes" rows="3" placeholder="أكتب أي ملاحظات إضافية هنا..." style="resize: none;"></textarea>
+                        <span class="field-icon-left" style="margin-top: 8px;">📄</span>
+                    </div>
+                </div>
+
+                <!-- أزرار التبديل Switches -->
+                <div class="switch-row">
+                    <div class="switch-label-desc">
+                        <span class="switch-title">تفعيل السقف</span>
+                        <span class="switch-desc">عند التفعيل يُخزن مبلغ السقف في حقل الرصيد؛ يمنع الخصم إذا تجاوز رصيد العمليات هذا الحد لكل عملة.</span>
+                    </div>
+                    <label class="switch-toggle">
+                        <input type="checkbox" id="switchCeiling">
+                        <span class="slider-round"></span>
+                    </label>
+                </div>
+
+                <div class="switch-row">
+                    <div class="switch-label-desc">
+                        <span class="switch-title">تفعيل واتساب</span>
+                        <span class="switch-desc">سيتم إرسال إشعارات واتساب للعميل عند إضافة معاملات جديدة تلقائياً.</span>
+                    </div>
+                    <label class="switch-toggle">
+                        <input type="checkbox" id="switchWhatsapp" checked>
+                        <span class="slider-round"></span>
+                    </label>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveNewAccount()" style="width: 100%; background: var(--blue-btn); color: white; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; font-size: 14px;">💾 حفظ الحساب</button>
+                    <button onclick="switchPage('mainPage')" style="width: 100%; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 11px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer; font-size: 14px;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= واجهة إضافة قيد مالي جديد ================= -->
+        <div id="addEntryPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px;">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center; margin-bottom: 20px;">📝 إضافة قيد مالي جديد</h3>
+                
+                <div class="input-group-custom">
+                    <label>البيان / الشرح</label>
+                    <div class="input-field-wrapper" style="align-items: flex-start; padding: 6px 12px;">
+                        <textarea id="entryDesc" rows="3" placeholder="اكتب تفاصيل القيد"></textarea>
+                    </div>
+                </div>
+
+                <div class="input-group-custom">
+                    <label>المبلغ</label>
+                    <div class="input-field-wrapper">
+                        <input type="number" id="entryAmount" placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                    <button onclick="saveNewEntry()" style="width: 100%; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; font-size: 14px;">💾 حفظ القيد</button>
+                    <button onclick="switchPage('mainPage')" style="width: 100%; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 11px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer; font-size: 14px;">↩️ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= واجهة إعدادات التسعير (المطورة بالكامل طبقاً لـ 1000730745.png) ================= -->
+        <div id="pricingSettingsPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 18px;">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center; margin-bottom: 20px;">⚙️ إعدادات التسعير</h3>
+                
+                <label style="font-size: 12px; color: var(--text-gray); display: block; margin-bottom: 6px;">نوع العداد الافتراضي</label>
+                <div class="pricing-tabs-row">
+                    <div class="pricing-tab active" id="tabElec" onclick="togglePricingTab('Elec')">كهرباء</div>
+                    <div class="pricing-tab" id="tabWater" onclick="togglePricingTab('Water')">ماء</div>
+                </div>
+
+                <label style="font-size: 12px; color: var(--text-gray); display: block; margin-bottom: 6px;">طريقة سعر الوحدة</label>
+                <div class="pricing-tabs-row">
+                    <div class="pricing-tab active" id="tabFixed" onclick="togglePriceMethod('Fixed')">سعر ثابت</div>
+                    <div class="pricing-tab" id="tabUsage" onclick="togglePriceMethod('Usage')">حسب الاستهلاك</div>
+                </div>
+
+                <div class="input-group-custom">
+                    <label>سعر الوحدة</label>
+                    <div class="input-field-wrapper">
+                        <input type="number" id="unitPrice" placeholder="0.0">
+                    </div>
+                </div>
+
+                <div class="input-group-custom">
+                    <label>الاشتراك</label>
+                    <div class="input-field-wrapper">
+                        <input type="number" id="subPrice" placeholder="0.0">
+                    </div>
+                </div>
+
+                <div class="input-group-custom">
+                    <label>الضرائب</label>
+                    <div class="input-field-wrapper">
+                        <input type="number" id="taxPrice" placeholder="0.0">
+                    </div>
+                </div>
+
+                <div class="input-group-custom">
+                    <label>العملة</label>
+                    <div class="input-field-wrapper">
+                        <select id="pricingCurrency">
+                            <option value="YER" selected>يمني (الرئيسية)</option>
+                            <option value="SAR">سعودي</option>
+                        </select>
+                        <span class="field-icon-left">🪙</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="smartSendData('save_pricing_settings')" style="flex: 1; background: var(--blue-btn); color: white; border: none; padding: 11px; border-radius: 12px; font-family: 'Cairo'; font-weight: 600; cursor: pointer;">حفظ</button>
+                    <button onclick="switchPage('mainPage')" style="flex: 1; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 11px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer;">إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= واجهة إدارة القيود اليومية (المطورة بالكامل طبقاً لـ 1000730918.png) ================= -->
+        <div id="entriesPage" class="page">
+            <!-- الفلاتر الزمنية السريعة -->
+            <div class="filter-tabs">
+                <button class="tab-btn active" onclick="setEntryTab(this)">يومي</button>
+                <button class="tab-btn" onclick="setEntryTab(this)">أسبوعي</button>
+                <button class="tab-btn" onclick="setEntryTab(this)">شهري</button>
+                <button class="tab-btn" onclick="setEntryTab(this)">سنوي</button>
+                <button class="tab-btn" onclick="setEntryTab(this)">الكل</button>
+            </div>
+
+            <!-- صندوق البحث الذكي والخيارات المتقدمة -->
+            <div class="search-wrapper">
+                <input type="text" class="search-box" id="entrySearchBox" placeholder="البحث عن قيد أو حساب...">
+                <span class="search-icon-inside">🔍</span>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>الحساب</label>
+                        <select class="filter-select"><option>الكل</option></select>
+                    </div>
+                    <div class="filter-item">
+                        <label>العملة</label>
+                        <select class="filter-select" id="mainCurrencyFilter">
+                            <option value="YER">يمني</option>
+                            <option value="SAR">سعودي</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>الموظف</label>
+                        <select class="filter-select"><option>الكل</option></select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>من تاريخ</label>
+                        <input type="date" class="filter-input" value="2026-06-07">
+                    </div>
+                    <div class="filter-item">
+                        <label>إلى تاريخ</label>
+                        <input type="date" class="filter-input" value="2026-06-07">
+                    </div>
+                    <div class="filter-item">
+                        <label>الصندوق</label>
+                        <select class="filter-select"><option>الكل</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شريط بطاقات ملخص الأرقام الإجمالي الأربعة -->
+            <div class="stats-summary-strip">
+                <div class="summary-card-item">
+                    <div class="summary-card-title">العدد</div>
+                    <div class="summary-card-val" style="color: white;">28</div>
+                </div>
+                <div class="summary-card-item">
+                    <div class="summary-card-title">إجمالي له</div>
+                    <div class="summary-card-val" style="color: var(--success-color);">330,200</div>
+                </div>
+                <div class="summary-card-item">
+                    <div class="summary-card-title">إجمالي عليه</div>
+                    <div class="summary-card-val" style="color: var(--danger-color);">404,700</div>
+                </div>
+                <div class="summary-card-item">
+                    <div class="summary-card-title">إجمالي الرصيد</div>
+                    <div class="summary-card-val" style="color: #3b82f6;">-74,500</div>
+                </div>
+            </div>
+
+            <!-- قائمة عرض بطاقات القيود والعمليات مع شريط الأزرار السفلية -->
+            <div id="entriesList">
+                <div class="entry-card">
+                    <div class="entry-top-info">
+                        <span>PM 11:45 2026-06-06</span>
+                        <span style="color: var(--success-color); font-weight: bold;">له ✔️</span>
+                    </div>
+                    <div class="entry-emp-name">الموظف: يونس محمد احمد عبده عثمان</div>
+                    <div class="entry-title-row">
+                        <span class="entry-title-text">حساب الصناديق الداخلي</span>
+                        <span style="color: var(--success-color); font-weight: 800; font-size: 14px;">3,000 يمني</span>
+                    </div>
+                    <div class="entry-desc-text">تحويل من المصروفات إلى الراجحي للصرافة - تحويل بين الصناديق</div>
+                    
+                    <!-- أزرار الإجراءات السريعة الدائرية المحترفة -->
+                    <div class="bottom-actions-row">
+                        <button class="circle-action-btn" onclick="smartSendData('action_whatsapp')">
+                            <span class="circle-icon" style="color: #22c55e;">🟢</span><span class="circle-label">واتساب</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_print')">
+                            <span class="circle-icon">🖨️</span><span class="circle-label">طباعة</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_sms')">
+                            <span class="circle-icon" style="color: #3b82f6;">✉️</span><span class="circle-label">SMS</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_edit')">
+                            <span class="circle-icon" style="color: var(--gold-color);">📝</span><span class="circle-label">تعديل</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_delete')">
+                            <span class="circle-icon" style="color: var(--danger-color);">🗑️</span><span class="circle-label">حذف</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="entry-card">
+                    <div class="entry-top-info">
+                        <span>PM 11:45 2026-06-06</span>
+                        <span style="color: var(--danger-color); font-weight: bold;">عليه ⚠️</span>
+                    </div>
+                    <div class="entry-emp-name">الموظف: يونس محمد احمد عبده عثمان</div>
+                    <div class="entry-title-row">
+                        <span class="entry-title-text">حساب الصناديق الداخلي</span>
+                        <span style="color: var(--danger-color); font-weight: 800; font-size: 14px;">3,000 يمني</span>
+                    </div>
+                    <div class="entry-desc-text">تحويل من المصروفات إلى الراجحي للصرافة - تحويل بين الصناديق</div>
+                    
+                    <div class="bottom-actions-row">
+                        <button class="circle-action-btn" onclick="smartSendData('action_whatsapp')">
+                            <span class="circle-icon" style="color: #22c55e;">🟢</span><span class="circle-label">واتساب</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_print')">
+                            <span class="circle-icon">🖨️</span><span class="circle-label">طباعة</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_sms')">
+                            <span class="circle-icon" style="color: #3b82f6;">✉️</span><span class="circle-label">SMS</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_edit')">
+                            <span class="circle-icon" style="color: var(--gold-color);">📝</span><span class="circle-label">تعديل</span>
+                        </button>
+                        <button class="circle-action-btn" onclick="smartSendData('action_delete')">
+                            <span class="circle-icon" style="color: var(--danger-color);">🗑️</span><span class="circle-label">حذف</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= صفحة الصناديق ================= -->
+        <div id="boxesPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 16px;">
+                <div style="font-size: 15px; font-weight: 700; color: var(--gold-color); margin-bottom: 10px;">🏦 صندوق المركز الرئيسي</div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;"><span>الريال اليمني:</span><span>1,200,000 يمني</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;"><span>الريال السعودي:</span><span>4,500 سعودي</span></div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= صفحة الخدمات ================= -->
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('receipt_payment')">💵 سند قبض / صرف</button>
+                <button class="btn-item" onclick="smartSendData('currency_exchange')">💱 مصارفة عملات</button>
+                <button class="back-btn full-width" onclick="switchPage('mainPage')">↩️ رجوع للرئيسية</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchPage(pageId) {
+            document.getElementById('settingsDropdown').style.display = 'none';
+            var pages = document.querySelectorAll('.page');
+            pages.forEach(function(p) {
+                p.classList.remove('active');
+            });
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+        }
+
+        function toggleSettingsDropdown() {
+            var d = document.getElementById('settingsDropdown');
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function togglePricingTab(type) {
+            document.getElementById('tabElec').classList.remove('active');
+            document.getElementById('tabWater').classList.remove('active');
+            document.getElementById('tab' + type).classList.add('active');
+        }
+
+        function togglePriceMethod(method) {
+            document.getElementById('tabFixed').classList.remove('active');
+            document.getElementById('tabUsage').classList.remove('active');
+            document.getElementById('tab' + method).classList.add('active');
+        }
+
+        function setEntryTab(btn) {
+            var tabs = btn.parentNode.querySelectorAll('.tab-btn');
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+        }
+
+        function smartSendData(actionName, additionalData = {}) {
+            var payload = { 
+                action: actionName, 
+                system: 'التزام_برو',
+                ...additionalData 
+            };
+            alert("🎯 تم تشغيل الإجراء بنجاح:\n" + JSON.stringify(payload, null, 2));
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.sendData) {
+                window.Telegram.WebApp.sendData(JSON.stringify(payload));
+            }
+        }
+
+        function saveNewAccount() {
+            var name = document.getElementById('accName').value;
+            var phone = document.getElementById('accPhone').value;
+            var cat = document.getElementById('accCategory').value;
+            var notes = document.getElementById('accNotes').value;
+            var isCeiling = document.getElementById('switchCeiling').checked;
+            var isWhatsapp = document.getElementById('switchWhatsapp').checked;
+
+            if(!name) {
+                alert('⚠️ يرجى إدخال اسم الحساب أولاً!');
+                return;
+            }
+
+            smartSendData('create_account', {
+                account_name: name,
+                account_phone: phone,
+                category: cat,
+                notes: notes,
+                ceiling_active: isCeiling,
+                whatsapp_active: isWhatsapp
+            });
+
+            document.getElementById('accName').value = '';
+            document.getElementById('accPhone').value = '';
+            document.getElementById('accNotes').value = '';
+            switchPage('mainPage');
+        }
+
+        function saveNewEntry() {
+            var desc = document.getElementById('entryDesc').value;
+            var amount = document.getElementById('entryAmount').value;
+
+            if(!desc || !amount) {
+                alert('⚠️ يرجى ملء حقول القيد أولاً!');
+                return;
+            }
+
+            smartSendData('filter_all', {
+                description: desc,
+                amount: amount
+            });
+
+            document.getElementById('entryDesc').value = '';
+            document.getElementById('entryAmount').value = '';
+            switchPage('mainPage');
+        }
+    </script>
+</body>
+</html>
