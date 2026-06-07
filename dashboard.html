@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>التزام برو - لوحة التحكم الشاملة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --bg-card-dark: #172434;
+            --border-color: #23354d;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --text-gray: #8fa0b5;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --blue-btn: #2563eb;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* تنبيه البيئة */
+        .error-banner {
+            background: rgba(204, 164, 59, 0.15);
+            border: 1px solid var(--gold-color);
+            color: var(--gold-color);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .system-status-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--hint-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-left: 5px;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 45px; 
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        
+        .logo-circle {
+            width: 90px;
+            height: 90px;
+            background-color: var(--bg-card);
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--gold-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            font-size: 40px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        /* إدارة تصفيف الصفحات والاستبدال النشط */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 13px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: right;
+            color: #f8fafc;
+            font-family: 'Cairo';
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-item:active { background: #2a3a52; }
+        .btn-icon { font-size: 18px; }
+        .btn-text { font-size: 13px; font-weight: 600; }
+
+        .btn-item.boxes-trigger { background: var(--gold-gradient); border: none; }
+        .btn-item.boxes-trigger .btn-text { color: #0b141c; font-weight: 700; }
+        .btn-item.all-services-trigger { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; }
+        .btn-item.renew-trigger { background: var(--gold-gradient); border: none; }
+        .btn-item.renew-trigger .btn-text { color: #0b141c; font-weight: 700; }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+
+        /* تصفيف قسم القيود */
+        .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; }
+        .tab-btn {
+            background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            padding: 6px 14px; border-radius: 10px; font-family: 'Cairo'; font-size: 12px; color: var(--text-gray); cursor: pointer;
+        }
+        .tab-btn.active { background-color: var(--blue-btn); color: white; }
+
+        .filters-grid {
+            background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 12px; margin-bottom: 14px;
+        }
+        .filter-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .filter-item { flex: 1; }
+        .filter-item label { display: block; font-size: 11px; color: var(--text-gray); margin-bottom: 4px; text-align: center; }
+        .filter-select, .filter-input {
+            width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 10px;
+            font-family: 'Cairo'; font-size: 12px; background: var(--bg-dark); color: white; box-sizing: border-box; text-align: center;
+        }
+
+        .search-wrapper { position: relative; margin-bottom: 14px; }
+        .search-box {
+            width: 100%; padding: 10px 12px 10px 35px; background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            border-radius: 10px; color: white; font-family: 'Cairo'; font-size: 12px; box-sizing: border-box;
+        }
+
+        .entry-card { background: var(--bg-card-dark); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 10px;}
+        .bottom-actions-row { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 6px; }
+        .circle-action-btn { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; flex: 1; }
+        .circle-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg-dark); border: 1px solid var(--border-color); color: white;}
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <!-- وضع المحاكاة للمتصفح التجريبي -->
+        <div class="error-banner">🔄 وضع التجربة النشط: يمكنك اختبار كافة الأزرار والصفحات هنا مباشرة على الهاتف.</div>
+
+        <div class="system-status-bar">
+            <div><span class="status-dot"></span> حالة النظام: جاهز للمعاينة</div>
+            <div>التزام برو v3.2</div>
+        </div>
+        
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <div class="logo-section">
+            <div class="logo-circle">📊</div>
+            <div style="font-family: 'Cairo'; font-weight: 800; font-size: 24px; color: #ffffff; margin-top: 8px;">
+                التزام <span style="color: var(--gold-color);">برو</span>
+            </div>
+        </div>
+
+        <!-- القائمة المنسدلة للإعدادات -->
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ الإعدادات:</div>
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('edit_profile')">📝 تعديل البيانات</button>
+                <button class="btn-item" onclick="smartSendData('change_password')">🔑 تغيير كلمة المرور</button>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>يونس ديزاين</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 رصيدك</span><span class="stat-value" style="color:var(--success-color);">150,000 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value">12 حساب</span></div>
+            </div>
+        </div>
+
+        <!-- ================= الصفحة الرئيسية ================= -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">📦 عرض الصناديق المحاسبية</button>
+                
+                <!-- الزر المصلح تماماً -->
+                <button class="btn-item" onclick="switchPage('addAccountPage')">
+                    <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                
+                <button class="btn-item" onclick="switchPage('entriesPage')">
+                    <span class="btn-icon">📊</span><span class="btn-text">إدارة القيود المالية</span>
+                </button>
+
+                <button class="btn-item" onclick="smartSendData('account_statement')">📋 كشف حساب</button>
+                <button class="btn-item" onclick="smartSendData('add_entry')">📝 إضافة قيد</button>
+                <button class="btn-item" onclick="smartSendData('reports')">📊 التقارير المالية</button>
+                <button class="btn-item full-width" onclick="switchPage('servicesPage')">📂 جميع الخدمات المتاحة</button>
+            </div>
+        </div>
+
+        <!-- ================= صفحة إضافة حساب (تم إصلاحها بالكامل) ================= -->
+        <div id="addAccountPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px;">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center;">👤 إضافة حساب عميل جديد</h3>
+                
+                <label style="font-size: 12px; color: var(--hint-color); display: block; margin-bottom: 4px;">اسم الحساب / العميل:</label>
+                <input type="text" id="accName" placeholder="أدخل اسم العميل بالكامل" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; box-sizing: border-box; margin-bottom: 14px; font-family: 'Cairo';">
+                
+                <label style="font-size: 12px; color: var(--hint-color); display: block; margin-bottom: 4px;">رقم الهاتف الجوال:</label>
+                <input type="tel" id="accPhone" placeholder="77xxxxxxx" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; box-sizing: border-box; margin-bottom: 14px; font-family: 'Cairo';">
+                
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <button onclick="saveNewAccount()" style="flex: 1; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer;">💾 حفظ العميل</button>
+                    <button onclick="switchPage('mainPage')" style="flex: 1; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= صفحة إدارة القيود ================= -->
+        <div id="entriesPage" class="page">
+            <div class="filter-tabs">
+                <button class="tab-btn active">يومي</button>
+                <button class="tab-btn">أسبوعي</button>
+                <button class="tab-btn">الكل</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-row">
+                    <div class="filter-item"><label>الحساب</label><select class="filter-select"><option>كل العملاء</option></select></div>
+                    <div class="filter-item"><label>العملة</label><select class="filter-select"><option>ريال يمني</option></select></div>
+                </div>
+            </div>
+
+            <div id="entriesList">
+                <div class="entry-card">
+                    <div style="font-size: 11px; color: var(--hint-color);">2026-06-07 15:30</div>
+                    <div style="font-weight: 700; margin: 4px 0;">حساب شركة الديكور</div>
+                    <div style="font-size: 12px; color: var(--text-gray);">توريد مواد ومستلزمات لوحة إعلانية.</div>
+                    <div style="color: var(--success-color); font-weight: 700; text-align: left;">+50,000 ريال</div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= صفحة الصناديق ================= -->
+        <div id="boxesPage" class="page">
+            <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 16px;">
+                <div style="font-size: 15px; font-weight: 700; color: var(--gold-color); margin-bottom: 10px;">🏦 صندوق المركز الرئيسي</div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;"><span>الريال اليمني:</span><span>1,200,000 يمني</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;"><span>الريال السعودي:</span><span>4,500 سعودي</span></div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= صفحة الخدمات ================= -->
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('receipt_payment')">💵 سند قبض / صرف</button>
+                <button class="btn-item" onclick="smartSendData('currency_exchange')">💱 مصارفة عملات</button>
+                <button class="back-btn full-width" onclick="switchPage('mainPage')">↩️ رجوع للرئيسية</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // دالة التنقل الآمنة بين الصفحات (تخفي الحالي وتظهر المستهدف فوراً)
+        function switchPage(pageId) {
+            // إخفاء القائمة المنسدلة للإعدادات تلقائياً لمنع التداخل
+            document.getElementById('settingsDropdown').style.display = 'none';
+            
+            // إخفاء كافة الصفحات
+            var pages = document.querySelectorAll('.page');
+            pages.forEach(function(p) {
+                p.classList.remove('active');
+            });
+            
+            // إظهار الصفحة المطلوبة
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            } else {
+                console.error("Page ID not found: " + pageId);
+            }
+        }
+
+        // دالة إظهار وإخفاء قائمة الإعدادات العلوي
+        function toggleSettingsDropdown() {
+            var d = document.getElementById('settingsDropdown');
+            if(d.style.display === 'block') {
+                d.style.display = 'none';
+            } else {
+                d.style.display = 'block';
+            }
+        }
+
+        // دالة إرسال البيانات المحدثة (تعمل في المتصفح محاكاة وفي التليجرام حقيقة)
+        function smartSendData(actionName, additionalData = {}) {
+            var payload = { 
+                action: actionName, 
+                system: 'التزام_برو',
+                ...additionalData 
+            };
+            
+            // إشعار للمتصفح العادي لتعرف النتيجة أثناء الفحص المباشر
+            alert("🎯 تم تشغيل الإجراء بنجاح في المتصفح:\n" + JSON.stringify(payload, null, 2));
+            
+            // إذا كان تليجرام حقيقي يعمل بالخلفية
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.sendData) {
+                window.Telegram.WebApp.sendData(JSON.stringify(payload));
+            }
+        }
+
+        // دالة حفظ الحساب الجديد عند التجربة
+        function saveNewAccount() {
+            var name = document.getElementById('accName').value;
+            var phone = document.getElementById('accPhone').value;
+
+            if(!name) {
+                alert('⚠️ يرجى إدخال اسم العميل أولاً لتجربة الحفظ!');
+                return;
+            }
+
+            smartSendData('create_account', {
+                account_name: name,
+                account_phone: phone
+            });
+
+            // تصفير الخانات والعودة للرئيسية
+            document.getElementById('accName').value = '';
+            document.getElementById('accPhone').value = '';
+            switchPage('mainPage');
+        }
+    </script>
+</body>
+</html>
