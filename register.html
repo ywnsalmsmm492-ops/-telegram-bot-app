@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root { --gold: #cca43b; --navy: #131b24; --text-gray: #94a3b8; }
+        /* تحسينات التصميم */
+        .footer { margin-top: 30px; font-size: 12px; color: var(--text-gray); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .footer a { color: var(--text-gray); text-decoration: none; transition: 0.3s; }
+        .footer a:hover { color: var(--gold); }
+        
+        /* إضافة تأثير إضاءة خفيف خلف الشعار */
+        .logo { box-shadow: 0 0 15px rgba(204, 164, 59, 0.3); }
+        
+        /* تحسين مظهر الحقول عند التركيز */
+        input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 5px rgba(204, 164, 59, 0.2); }
+    </style>
+</head>
+<body>
+
+<div class="footer">
+    برمجة وتطوير <a href="https://wa.me/message/ECXIR3SSPZNGJ1" target="_blank">يونس الكدهي | 775154169</a>
+</div>
+
+<script>
+    // تحديث دالة التبديل لضمان إخفاء الحقل بشكل صحيح
+    function toggleMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('role-container').classList.toggle('hidden', isLoginMode);
+        document.getElementById('title').innerText = isLoginMode ? 'تسجيل الدخول' : (currentRole === 'admin' ? 'إنشاء حساب مدير' : 'إنشاء حساب موظف');
+        
+        // إخفاء الاسم الكامل دائماً في وضع تسجيل الدخول
+        document.getElementById('name').style.display = isLoginMode ? 'none' : (currentRole === 'admin' ? 'block' : 'none');
+        
+        document.getElementById('toggle-text').innerText = isLoginMode ? 'إنشاء حساب جديد؟' : 'هل لديك حساب مسبقاً؟ سجل دخولك';
+    }
+</script>
+</body>
+</html>
