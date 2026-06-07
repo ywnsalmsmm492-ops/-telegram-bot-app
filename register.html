@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>إنشاء حساب - التزام برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo-circle {
+            width: 100px;
+            height: 100px;
+            background: #ffffff;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid var(--gold-color);
+            overflow: hidden;
+        }
+
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+
+        .logo-text-title { font-size: 20px; font-weight: 800; margin-bottom: 5px; }
+        .logo-text-title span { color: var(--gold-color); }
+        
+        .input-group { margin-bottom: 12px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            box-sizing: border-box;
+            text-align: right;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--gold-color);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .error { color: var(--danger-color); font-size: 12px; margin-top: 10px; display: none; }
+
+        /* تذييل الحقوق */
+        .footer-credits {
+            margin-top: 20px;
+            font-size: 10px;
+            color: var(--hint-color);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo-section">
+            <div class="logo-circle"><img src="https://i.imgur.com/your_logo.png" alt="logo" class="logo-img" onerror="this.src='📊'"></div>
+            <div class="logo-text-title">التزام <span>برو</span></div>
+        </div>
+
+        <h2>إنشاء حساب جديد</h2>
+        
+        <div class="input-group"><input type="text" id="name" placeholder="الاسم الكامل أو اسم النشاط"></div>
+        <div class="input-group"><input type="tel" id="phone" placeholder="رقم الهاتف"></div>
+        <div class="input-group"><input type="password" id="password" placeholder="كلمة المرور"></div>
+        <div class="input-group"><input type="password" id="confirm_password" placeholder="تأكيد كلمة المرور"></div>
+        
+        <button onclick="register()">إنشاء الحساب وبدء العمل</button>
+        <p class="error" id="error"></p>
+
+        <div class="footer-credits">
+            برمجة وتطوير يونس الكدهي | 775154169
+        </div>
+    </div>
+
+    <script>
+        // دالة التسجيل (نفس المنطق السابق مع تحسين بسيط)
+        function register() {
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const errorDiv = document.getElementById('error');
+
+            if (!name || !phone || !password) {
+                errorDiv.innerText = '⚠️ يرجى تعبئة جميع الحقول';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (password !== confirm) {
+                errorDiv.innerText = '⚠️ كلمة المرور غير متطابقة';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // إرسال البيانات
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({action: 'register', name, phone, password}));
+            } else {
+                alert("تم تسجيل البيانات بنجاح");
+            }
+        }
+    </script>
+</body>
+</html>
