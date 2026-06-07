@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>التزام برو - تسجيل</title>
+    <style>
+        :root { --gold: #cca43b; --navy: #131b24; }
+        body { font-family: sans-serif; background: #131b24; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .main-btn { width: 100%; padding: 12px; background: #cca43b; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .main-btn:disabled { background: #7e8b9a; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 id="title">إنشاء حساب</h2>
+    <div id="form-content">
+        <input type="text" id="name" placeholder="الاسم الكامل" class="admin-only">
+        <input type="tel" id="phone" placeholder="رقم الهاتف">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <input type="password" id="confirm_password" placeholder="تأكيد كلمة المرور">
+        <button id="submit-btn" class="main-btn" onclick="submitForm()">إنشاء الحساب</button>
+    </div>
+</div>
+
+<script>
+    function submitForm() {
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const pass = document.getElementById('password').value;
+        const confirmPass = document.getElementById('confirm_password').value;
+        const btn = document.getElementById('submit-btn');
+
+        // 1. التحقق من البيانات
+        if(pass !== confirmPass) {
+            alert("كلمة المرور غير متطابقة!");
+            return;
+        }
+
+        // 2. تفعيل حالة التحميل
+        btn.disabled = true;
+        btn.innerText = "جاري المعالجة...";
+
+        // 3. هنا يتم ربط السيرفر
+        // مثال: استخدام fetch لإرسال البيانات إلى ملف PHP أو API
+        console.log("إرسال البيانات إلى السيرفر:", {name, phone, pass});
+
+        setTimeout(() => {
+            alert("تم إرسال البيانات بنجاح (هنا ستضع كود الربط بالسيرفر)");
+            btn.disabled = false;
+            btn.innerText = "إنشاء الحساب";
+        }, 2000);
+    }
+</script>
+</body>
+</html>
