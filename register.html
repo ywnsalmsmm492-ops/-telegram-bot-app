@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #cca43b; --navy: #131b24; --text-gray: #7e8b9a; }
+        
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a); 
+            color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+        }
+
+        .card { 
+            /* لمسة Glassmorphism الاحترافية */
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 30px; 
+            padding: 40px; 
+            width: 90%; max-width: 380px; 
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* إضاءة الشعار */
+        .logo { 
+            width: 100px; height: 100px; margin-bottom: 20px; 
+            border-radius: 50%; border: 2px solid var(--gold); 
+            filter: drop-shadow(0 0 10px rgba(204, 164, 59, 0.5)); 
+        }
+        
+        /* تنسيق الحقوق */
+        .footer { 
+            margin-top: 30px; 
+            font-size: 10px; 
+            color: var(--text-gray); 
+            letter-spacing: 0.5px;
+        }
+        .footer a { 
+            color: var(--text-gray); 
+            text-decoration: none; 
+            transition: 0.3s; 
+        }
+        .footer a:hover { color: var(--gold); }
+
+        /* باقي التنسيقات (أزرار وحقول) */
+        .role-btn { padding: 10px 20px; border: 1px solid var(--gold); background: transparent; color: var(--gold); border-radius: 10px; cursor: pointer; }
+        .role-btn.active { background: var(--gold); color: #000; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; box-sizing: border-box; }
+        .main-btn { width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 10px; font-weight: bold; color: #000; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <img src="https://i.imgur.com/kP47HjH.png" class="logo" alt="logo">
+    
+    <div id="role-container" style="margin-bottom: 20px;">
+        <button class="role-btn active" id="btn-admin" onclick="setRole('admin')">مدير</button>
+        <button class="role-btn" id="btn-employee" onclick="setRole('employee')">موظف</button>
+    </div>
+
+    <h2 id="title">إنشاء حساب مدير</h2>
+
+    <div id="form-content">
+        <input type="text" id="name" placeholder="الاسم الكامل">
+        <input type="tel" id="phone" placeholder="رقم الهاتف">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button class="main-btn" onclick="submit()">إنشاء الحساب</button>
+    </div>
+
+    <div class="footer">
+        برمجة وتطوير <a href="https://wa.me/message/ECXIR3SSPZNGJ1" target="_blank">يونس الكدهي | 775154169</a>
+    </div>
+</div>
+
+<script>
+    function setRole(role) {
+        document.getElementById('btn-admin').classList.toggle('active', role === 'admin');
+        document.getElementById('btn-employee').classList.toggle('active', role === 'employee');
+        document.getElementById('title').innerText = role === 'admin' ? 'إنشاء حساب مدير' : 'إنشاء حساب موظف';
+        document.getElementById('name').style.display = role === 'admin' ? 'block' : 'none';
+    }
+    function submit() { alert("جاري المعالجة..."); }
+</script>
+
+</body>
+</html>
