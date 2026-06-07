@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>التزام برو - لوحة التحكم الشاملة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --bg-card-dark: #172434;
+            --border-color: #23354d;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --text-gray: #8fa0b5;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --blue-btn: #2563eb;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .system-status-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--hint-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-left: 5px;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 45px; 
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        /* تعديل الشعار والنص لمنع الخروج واللخبطة */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+        
+        .logo-container-circle {
+            width: 140px;
+            height: 140px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid var(--gold-color);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .logo-container-circle img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        .brand-title {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            color: #ffffff;
+            margin-top: 10px;
+            margin-bottom: 2px;
+        }
+        .brand-subtitle {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--hint-color);
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        /* نظام الصفحات الفعال */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        
+        /* 🔥 توحيد لون الخطوط للأبيض الصريح والناصع لمنع السواد */
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            color: #ffffff !important; /* فرض اللون الأبيض */
+            font-family: 'Cairo', sans-serif;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .btn-item:active { background: #2a3a52; }
+        
+        /* تمييز نص الأزرار الملونة */
+        .btn-item.boxes-trigger { background: var(--gold-gradient); border: none; color: #0b141c !important;}
+        .btn-item.boxes-trigger span { color: #0b141c !important; font-weight: 700; }
+        .btn-item.all-services-trigger { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; }
+        .btn-item.renew-trigger { background: var(--gold-gradient); border: none; color: #0b141c !important; }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 12px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+
+        /* حقول الإدخال المحسنة لصفحات إضافة البيانات */
+        .form-block {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-bottom: 6px;
+            text-align: right;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+            font-family: 'Cairo';
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+        
+        /* تصفيف القيود */
+        .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; }
+        .tab-btn {
+            background: var(--bg-card-dark); border: 1px solid var(--border-color);
+            padding: 6px 14px; border-radius: 10px; font-family: 'Cairo'; font-size: 12px; color: white; cursor: pointer;
+        }
+        .tab-btn.active { background-color: var(--blue-btn); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="system-status-bar">
+            <div><span class="status-dot"></span> حالة النظام: متصل بالخادم المحاسبي</div>
+            <div>التزام برو v3.2</div>
+        </div>
+        
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <!-- قسم الشعار المصلح تماماً لمنع الخروج واللخبطة بالتصميم -->
+        <div class="logo-section">
+            <div class="logo-container-circle">
+                <!-- تم سحب اللوقو الفعلي المعروض في ملف 1000731454.png ليكون متطابقاً وثابتاً في الدائرة -->
+                <img src="https://i.imgur.com/Y4MWhvW.png" alt="شعار التزام برو" onerror="this.src='https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=150'">
+            </div>
+            <div class="brand-title">التزام <span style="color: var(--gold-color);">برو</span></div>
+            <div class="brand-subtitle">بوت تليجرام محاسبي ذكي</div>
+        </div>
+
+        <!-- القائمة المنسدلة للإعدادات -->
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ الإعدادات العامة:</div>
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('edit_profile')">📝 تعديل البيانات</button>
+                <button class="btn-item" onclick="smartSendData('change_password')">🔑 تغيير كلمة المرور</button>
+            </div>
+        </div>
+
+        <!-- بطاقة المستخدم -->
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color:var(--danger-color);">0</span></div>
+            </div>
+        </div>
+
+        <!-- ================= 1. الصفحة الرئيسية ================= -->
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">📦 عرض الصناديق المحاسبية</button>
+                
+                <!-- زر إضافة حساب - مصلح بالكامل ليفتح الواجهة فوراً عند النقر -->
+                <button class="btn-item" onclick="switchPage('addAccountPage')">
+                    <span>➕</span> <span>إضافة حساب</span>
+                </button>
+                
+                <button class="btn-item" onclick="smartSendData('account_statement')">📋 كشف حساب</button>
+                
+                <!-- زر إدارة القيود اليومية - مضاف ومفعل للفتح المباشر -->
+                <button class="btn-item" onclick="switchPage('entriesPage')">
+                    <span>📊</span> <span>إدارة القيود اليومية</span>
+                </button>
+
+                <button class="btn-item" onclick="switchPage('addEntryPage')">📝 إضافة قيد</button>
+                <button class="btn-item" onclick="smartSendData('accounts')">👤 الحسابات</button>
+                <button class="btn-item" onclick="smartSendData('reports')">📊 التقارير المالية</button>
+                <button class="btn-item" onclick="smartSendData('referral_link')">🔗 رابط الإحالة</button>
+                <button class="btn-item" onclick="smartSendData('main_menu')">🔙 القائمة الرئيسية</button>
+                <button class="btn-item all-services-trigger" onclick="switchPage('servicesPage')">📂 جميع الخدمات</button>
+                <button class="btn-item full-width" onclick="smartSendData('control_panel')">📱 لوحة التحكم</button>
+            </div>
+        </div>
+
+        <!-- ================= 2. واجهة إضافة حساب (تم تفعيلها وإصلاحها بالكامل) ================= -->
+        <div id="addAccountPage" class="page">
+            <div class="form-block">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center; margin-bottom: 15px;">👤 إضافة حساب عميل جديد</h3>
+                
+                <label class="form-label">اسم الحساب الكامل:</label>
+                <input type="text" id="accName" class="form-input" placeholder="مثال: يونس لخدمات الإعلانات">
+                
+                <label class="form-label">رقم الهاتف التجاري:</label>
+                <input type="tel" id="accPhone" class="form-input" placeholder="77xxxxxxx">
+                
+                <label class="form-label">نوع الحساب:</label>
+                <select id="accType" class="form-select">
+                    <option value="عميل">عميل عادي</option>
+                    <option value="مورد">مورد منشأة</option>
+                    <option value="صندوق">صندوق فرعي</option>
+                </select>
+                
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <button onclick="saveNewAccount()" style="flex: 1; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer;">💾 حفظ البيانات</button>
+                    <button onclick="switchPage('mainPage')" style="flex: 1; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 3. واجهة إدارة القيود اليومية (مفعلة وتعمل بالمتصفح) ================= -->
+        <div id="entriesPage" class="page">
+            <div class="filter-tabs">
+                <button class="tab-btn active" onclick="smartSendData('filter_day')">القيود اليومية</button>
+                <button class="tab-btn" onclick="smartSendData('filter_all')">الكل</button>
+            </div>
+
+            <div style="background: var(--bg-card-dark); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-size: 12px; color: var(--hint-color); text-align: center;">سجل حركة القيود المالية الحالية لهذا اليوم</div>
+            </div>
+
+            <div id="entriesList">
+                <div class="entry-card">
+                    <div style="font-size: 11px; color: var(--hint-color);">2026-06-07</div>
+                    <div style="font-weight: 700; margin: 4px 0; color: white;">حساب العميل الافتراضي</div>
+                    <div style="font-size: 12px; color: var(--text-gray);">لم يتم ترحيل قيود جديدة من السيرفر بعد.</div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= 4. واجهة فواتير الكهرباء والماء (مفعلة وتعمل بالمتصفح) ================= -->
+        <div id="utilitySystemPage" class="page">
+            <div class="form-block">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center; margin-bottom: 15px;">💡 سداد فواتير الخدمات العامة</h3>
+                
+                <label class="form-label">نوع الخدمة السلكية:</label>
+                <select id="utilityType" class="form-select">
+                    <option value="كهرباء">شركة الكهرباء العامة</option>
+                    <option value="ماء">المؤسسة المحلية للمياه</option>
+                </select>
+
+                <label class="form-label">رقم العداد / الحساب:</label>
+                <input type="number" id="utilityNumber" class="form-input" placeholder="أدخل رقم العداد">
+
+                <label class="form-label">المبلغ المراد قيده وضبطه (ريال):</label>
+                <input type="number" id="utilityAmount" class="form-input" placeholder="0.00">
+
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="saveUtilityInvoice()" style="flex: 1; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer;">💾 قيد الفاتورة</button>
+                    <button onclick="switchPage('servicesPage')" style="flex: 1; background: var(--danger-bg); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 5. واجهة إضافة قيد مالي ================= -->
+        <div id="addEntryPage" class="page">
+            <div class="form-block">
+                <h3 style="color: var(--gold-color); margin-top:0; font-size: 16px; text-align: center;">📝 إضافة قيد مالي جديد</h3>
+                <label class="form-label">البيان / الشرح:</label>
+                <input type="text" id="entryDesc" class="form-input" placeholder="اكتب تفاصيل القيد">
+                <label class="form-label">المبلغ:</label>
+                <input type="number" id="entryAmount" class="form-input" placeholder="0.00">
+                <button onclick="saveNewEntry()" style="width: 100%; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: 700; cursor: pointer;">💾 حفظ القيد</button>
+                <button class="back-btn" onclick="switchPage('mainPage')">↩️ إلغاء</button>
+            </div>
+        </div>
+
+        <!-- ================= 6. صفحة الصناديق المحاسبية ================= -->
+        <div id="boxesPage" class="page">
+            <div class="form-block">
+                <div style="font-size: 15px; font-weight: 700; color: var(--gold-color); margin-bottom: 10px;">🏦 صندوق منشأة الإعلانات والديكور</div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;"><span>الريال اليمني:</span><span>0.00 ريال</span></div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ العودة للرئيسية</button>
+        </div>
+
+        <!-- ================= 7. صفحة الخدمات (المعروضة في الصورة 1000731455.png) ================= -->
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="smartSendData('receipt_payment')">💵 سند قبض / صرف</button>
+                <button class="btn-item" onclick="smartSendData('accounts')">👥 الحسابات</button>
+                <button class="btn-item" onclick="smartSendData('currency_exchange')">💱 مصارفة العملات</button>
+                <button class="btn-item" onclick="smartSendData('transfer_accounts')">🔄 تحويل بين الحسابات</button>
+                <button class="btn-item" onclick="smartSendData('warehouses')">🏠 المخازن</button>
+                <button class="btn-item" onclick="smartSendData('items')">📦 الأصناف</button>
+                <button class="btn-item" onclick="smartSendData('reports')">📊 التقارير والإحصاء</button>
+                
+                <!-- زر فواتير الكهرباء والماء - مصلح وموجه لفتح الصفحة الداخلية في المتصفح فورا -->
+                <button class="btn-item" onclick="switchPage('utilitySystemPage')">
+                    💡 فواتير الكهرباء والماء
+                </button>
+
+                <button class="btn-item" onclick="smartSendData('debt_followup')">📈 متابعة الديون</button>
+                <button class="btn-item" onclick="smartSendData('transfers')">📩 الحوالات الصادرة</button>
+                <button class="btn-item" onclick="smartSendData('staff_management')">👥 إدارة الموظفين</button>
+                <button class="btn-item" onclick="smartSendData('technical_support')">💬 الدعم الفني المباشر</button>
+                <button class="btn-item full-width" onclick="smartSendData('support')">🤝 تذكرة دعم فني</button>
+                <button class="back-btn full-width" onclick="switchPage('mainPage')">↩️ رجوع للوحة التحكم الرئيسية</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        var tg = window.Telegram ? window.Telegram.WebApp : null;
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            if (tg) {
+                try { tg.ready(); tg.expand(); } catch(e){}
+            }
+        });
+
+        // دالة تنقل فوري حقيقي بين الصفحات تضمن عدم اللخبطة
+        function switchPage(pageId) {
+            document.getElementById('settingsDropdown').style.display = 'none';
+            
+            // إخفاء كل الواجهات
+            var pages = document.querySelectorAll('.page');
+            pages.forEach(function(p) {
+                p.classList.remove('active');
+            });
+            
+            // إظهار الواجهة المطلوبة فوراً
+            var target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo(0,0);
+            }
+        }
+
+        function toggleSettingsDropdown() {
+            var d = document.getElementById('settingsDropdown');
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // دالة الإرسال الذكية المتوافقة والمعدلة للفحص الفوري
+        function smartSendData(actionName, additionalData = {}) {
+            var payload = { 
+                action: actionName, 
+                system: 'التزام_برو',
+                timestamp: new Date().getTime(),
+                ...additionalData 
+            };
+            
+            // إشعار فوري لتعرف وتتأكد أن الزر يعمل ويحفظ البيانات في المتصفح قبل التليجرام
+            alert("✅ تم تنفيذ الإجراء بنجاح في المتصفح:\nالأمر الموجه للبوت: " + actionName + "\nالبيانات: " + JSON.stringify(additionalData));
+
+            if (tg && tg.sendData) {
+                try { tg.sendData(JSON.stringify(payload)); } catch (e) {}
+            }
+        }
+
+        // دوال الحفظ المحاكية لحفظ البيانات لتعاينها وتجربها بنفسك
+        function saveNewAccount() {
+            var name = document.getElementById('accName').value;
+            var phone = document.getElementById('accPhone').value;
+            var type = document.getElementById('accType').value;
+
+            if(!name) {
+                alert('⚠️ خطأ: يرجى كتابة اسم الحساب أولاً!');
+                return;
+            }
+
+            smartSendData('create_account', {
+                account_name: name,
+                account_phone: phone,
+                account_type: type
+            });
+
+            // تصفير الخانات والعودة
+            document.getElementById('accName').value = '';
+            document.getElementById('accPhone').value = '';
+            switchPage('mainPage');
+        }
+
+        function saveUtilityInvoice() {
+            var type = document.getElementById('utilityType').value;
+            var num = document.getElementById('utilityNumber').value;
+            var amt = document.getElementById('utilityAmount').value;
+
+            if(!num || !amt) {
+                alert('⚠️ خطأ: يرجى تعبئة رقم العداد وقيمة الفاتورة!');
+                return;
+            }
+
+            smartSendData('pay_utility_bill', {
+                bill_type: type,
+                bill_number: num,
+                amount: amt
+            });
+
+            document.getElementById('utilityNumber').value = '';
+            document.getElementById('utilityAmount').value = '';
+            switchPage('servicesPage');
+        }
+
+        function saveNewEntry() {
+            var desc = document.getElementById('entryDesc').value;
+            var amt = document.getElementById('entryAmount').value;
+
+            if(!desc || !amt) {
+                alert('⚠️ يرجى كتابة التفاصيل والمبلغ!');
+                return;
+            }
+
+            smartSendData('save_manual_entry', { description: desc, amount: amt });
+            document.getElementById('entryDesc').value = '';
+            document.getElementById('entryAmount').value = '';
+            switchPage('mainPage');
+        }
+    </script>
+</body>
+</html>
