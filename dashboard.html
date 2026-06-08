@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التزام برو - لوحة التحكم الذكية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            
+            /* ألوان إدارة القيود المدمجة بالملي */
+            --bg-main-entries: #0e1926;
+            --bg-card-entries: #172434;
+            --border-entries: #23354d;
+            --accent-gold: #f59e0b;
+            --blue-btn: #2563eb;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .system-status-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--hint-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-left: 5px;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 45px; 
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .settings-top-trigger:active {
+            transform: scale(0.85); 
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        
+        .logo-circle {
+            width: 140px;
+            height: 140px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 0 4px #131b24, 0 0 0 7px var(--gold-color), 0 8px 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+        }
+        .logo-circle svg {
+            width: 90%;
+            height: 90%;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold-color);
+            margin: 6px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .stat-label { color: var(--hint-color); }
+        .stat-value { font-weight: 700; }
+
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 13px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: right;
+            transition: background 0.2s, transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-item:active {
+            transform: scale(0.95);
+            background: #2a3a52;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .btn-item::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: inherit;
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .btn-item:active::after {
+            transform: translate(-50%, -50%) scale(1.2);
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .btn-icon {
+            font-size: 18px;
+        }
+        .btn-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .btn-item.boxes-trigger {
+            background: linear-gradient(135deg, #cca43b, #a37f29);
+            border: none;
+            box-shadow: 0 4px 12px rgba(204, 164, 59, 0.2);
+        }
+        .btn-item.boxes-trigger .btn-text {
+            color: #0b141c;
+            font-weight: 700;
+        }
+        .btn-item.boxes-trigger:active {
+            background: linear-gradient(135deg, #b59030, #8f6e22);
+        }
+
+        .btn-item.all-services-trigger {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        .btn-item.all-services-trigger:active {
+            background: #1e40af;
+        }
+
+        .btn-item.renew-trigger {
+            background: var(--gold-gradient);
+            border: none;
+            box-shadow: 0 4px 15px rgba(204, 164, 59, 0.3);
+        }
+        .btn-item.renew-trigger .btn-text {
+            color: #0b141c;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .back-btn:active {
+            transform: scale(0.97);
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .box-container-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .box-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+        .box-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold-color);
+        }
+        .box-card-icon {
+            font-size: 20px;
+        }
+        .box-balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .box-balance-converted {
+            font-size: 12px;
+            color: var(--success-color);
+            margin-top: 8px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            padding-top: 8px;
+            text-align: left;
+        }
+        .box-card-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .box-action-sub-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px;
+            border-radius: 10px;
+            color: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .box-action-sub-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .switch-modern { position: relative; display: inline-block; width: 42px; height: 22px; }
+        .switch-modern input { opacity: 0; width: 0; height: 0; }
+        .slider-modern { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .3s; border-radius: 34px; }
+        .slider-modern:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider-modern { background-color: #cca43b; }
+        input:checked + .success-slider { background-color: #22c55e; }
+        input:checked + .slider-modern:before { transform: translateX(20px); }
+        @keyframes fadeInShort { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* === ستايلات إدارة القيود المدمجة بالملي === */
+        .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 12px 2px; }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); padding: 8px 18px; border-radius: 10px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; color: var(--hint-color); cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background-color: var(--blue-btn); color: white; border-color: var(--blue-btn); }
+        .filters-grid { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .filter-row:last-child { margin-bottom: 0; }
+        .filter-item { flex: 1; }
+        .filter-item label { display: block; font-size: 12px; color: var(--hint-color); margin-bottom: 6px; text-align: center; }
+        .filter-select, .filter-input { width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; font-family: 'Cairo'; font-size: 13px; background: var(--bg-dark); color: white; box-sizing: border-box; text-align: center; outline: none; }
+        .filter-input:focus, .filter-select:focus { border-color: var(--gold-color); }
+        .stats-grid-entries { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stat-box { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 4px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .stat-val { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: white; }
+        .stat-lbl { font-size: 11px; color: var(--hint-color); font-weight: 600; }
+        .search-wrapper { position: relative; margin-bottom: 16px; }
+        .search-box { width: 100%; padding: 12px 14px 12px 40px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; font-family: 'Cairo', sans-serif; font-size: 13px; box-sizing: border-box; outline: none; }
+        .search-icon-inside { position: absolute; left: 14px; top: 14px; color: var(--hint-color); }
+        #entriesList { display: flex; flex-direction: column; gap: 12px; }
+        .entry-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .time-stamp { font-size: 12px; color: var(--hint-color); }
+        .status-indicator { font-size: 12px; font-weight: 700; color: var(--gold-color); }
+        .account-title { font-size: 16px; font-weight: 700; color: white; }
+        .meta-text { font-size: 12px; color: var(--hint-color); }
+        .statement-text { font-size: 13px; color: white; margin: 8px 0 14px 0; line-height: 1.4; }
+        .amount-num { font-size: 17px; font-weight: 800; color: white; }
+        .bottom-actions-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 6px; }
+        .circle-action-btn { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; flex: 1; }
+        .circle-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; background: var(--bg-dark); color: white; border: 1px solid rgba(255,255,255,0.08); }
+        .btn-lbl { font-size: 11px; font-weight: 600; color: var(--hint-color); margin-top: 5px; }
+        .loading-text { text-align: center; color: var(--hint-color); font-size: 13px; padding: 25px; }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="system-status-bar">
+            <div><span class="status-dot"></span> حالة النظام: متصل بالسيرفر</div>
+            <div>التزام برو v3.2 | 🔒 آمن</div>
+        </div>
+        
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <div class="logo-section">
+            <div class="logo-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="55" r="46" fill="none" stroke="#102a43" stroke-width="4"/>
+                    <path d="M60 9 A 46 46 0 0 1 103 40" fill="none" stroke="#cca43b" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="35" y="28" width="26" height="34" rx="3" fill="#102a43"/>
+                    <rect x="39" y="32" width="18" height="8" fill="#bcccdc"/>
+                    <rect x="39" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="44" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="39" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="49" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="39" y="54" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="46" y="54" width="4" height="3" rx="0.5" fill="#fff" opacity="0.8"/>
+                    <rect x="53" y="54" width="4" height="3" rx="0.5" fill="#cca43b"/>
+                    <rect x="65" y="42" width="5" height="20" fill="#102a43"/>
+                    <rect x="73" y="34" width="5" height="28" fill="#102a43"/>
+                    <rect x="81" y="25" width="5" height="37" fill="#102a43"/>
+                    <path d="M58 48 L68 38 L76 33 L85 22" fill="none" stroke="#cca43b" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M80 22 H85 V27" fill="none" stroke="#cca43b" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="48" y="40" width="28" height="34" rx="2" fill="#ffffff" stroke="#102a43" stroke-width="2"/>
+                    <line x1="53" y1="46" x2="71" y2="46" stroke="#102a43" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="53" y1="52" x2="67" y2="52" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="53" y1="57" x2="71" y2="57" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="53" y1="62" x2="61" y2="62" stroke="#7e8b9a" stroke-width="1.5" stroke-linecap="round"/>
+                    <rect x="53" y="66" width="4" height="4" fill="#cca43b"/>
+                    <rect x="59" y="66" width="4" height="4" fill="#102a43"/>
+                    <rect x="65" y="66" width="4" height="4" fill="#102a43"/>
+                    <circle cx="82" cy="70" r="13" fill="#102a43" stroke="#ffffff" stroke-width="2"/>
+                    <path d="M75 70 L89 64 L86 76 L82 72 L79 74 Z" fill="#ffffff"/>
+                    <path d="M82 72 L86 64 L79 70 Z" fill="#bcccdc"/>
+                </svg>
+            </div>
+            <div style="font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 24px; color: white; margin-top: 8px; letter-spacing: 0.5px;">
+                التزام <span style="color: var(--gold-color);">برو</span>
+            </div>
+            <div style="font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 12px; color: var(--hint-color); margin-top: -2px;">بوت تليجرام محاسبي ذكي</div>
+        </div>
+
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ إعدادات وتفضيلات النظام:</div>
+            <div class="grid-layout">
+                <button class="btn-item" onclick="sendAction('edit_profile')">📝 تعديل البيانات</button>
+                <button class="btn-item" onclick="sendAction('change_password')">🔑 تغيير كلمة المرور</button>
+                <button class="btn-item" onclick="sendAction('set_main_currency')">💱 العملة الافتراضية</button>
+                <button class="btn-item" onclick="sendAction('toggle_notifications')">🔔 إشعارات الحساب</button>
+                <button class="btn-item full-width" style="background: rgba(204,164,59,0.1); border: 1px solid var(--gold-color);" onclick="sendAction('settings')">
+                    ⚙️ إجراء إعدادات عامة
+                </button>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div style="font-size: 12px; margin-bottom: 6px;">🎁 نقاطك: <strong style="color: var(--gold-color);">0</strong></div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color:var(--danger-color);">0</span></div>
+                <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">📝 المعاملات</span><span class="stat-value">0</span></div>
+            </div>
+        </div>
+
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">📦 عرض الصناديق المحاسبية</button>
+                <button class="btn-item" onclick="switchPage('addAccountPage')">
+                    <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                <button class="btn-item" onclick="switchPage('entriesPage')">📊 إدارة القيود</button>
+                <button class="btn-item" onclick="sendAction('account_statement')">📋 كشف حساب</button>
+                <button class="btn-item full-width" onclick="sendAction('add_entry')">📝 إضافة قيد</button>
+                <button class="btn-item" onclick="sendAction('accounts')">👤 الحسابات</button>
+                <button class="btn-item" onclick="sendAction('reports')">📊 التقارير المالية</button>
+                <button class="btn-item" onclick="sendAction('redeem_points')">🎁 استبدال النقاط</button>
+                <button class="btn-item" onclick="sendAction('referral_link')">🔗 رابط الإحالة</button>
+                <button class="btn-item" onclick="sendAction('main_menu')">🔙 القائمة الرئيسية</button>
+                <button class="btn-item all-services-trigger" onclick="switchPage('servicesPage')">
+                    <span class="btn-text" style="color: white;">📂 جميع الخدمات</span>
+                </button>
+                <button class="btn-item full-width" onclick="sendAction('control_panel')">📱 لوحة التحكم</button>
+            </div>
+        </div>
+
+        <div id="entriesPage" class="page">
+            <div class="filter-tabs">
+                <button class="tab-btn active" onclick="filterEntriesByPeriod('day', this)">يومي</button>
+                <button class="tab-btn" onclick="filterEntriesByPeriod('week', this)">أسبوعي</button>
+                <button class="tab-btn" onclick="filterEntriesByPeriod('month', this)">شهري</button>
+                <button class="tab-btn" onclick="filterEntriesByPeriod('year', this)">سنوي</button>
+                <button class="tab-btn" onclick="filterEntriesByPeriod('all', this)">الكل</button>
+                <button class="tab-btn" onclick="filterEntriesByPeriod('custom', this)">مخصص</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-row">
+                    <div class="filter-item"><label>الحساب</label><select id="filterAccount" class="filter-select" onchange="triggerEntriesFilter()"><option value="all">الكل</option></select></div>
+                    <div class="filter-item"><label>العملة</label><select id="filterCurrency" class="filter-select" onchange="triggerEntriesFilter()"><option value="all">الكل</option></select></div>
+                    <div class="filter-item"><label>الموظف</label><select id="filterStaff" class="filter-select" onchange="triggerEntriesFilter()"><option value="all">الكل</option></select></div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item"><label>من تاريخ</label><input type="date" id="filterDateFrom" class="filter-input" onchange="triggerEntriesFilter()"></div>
+                    <div class="filter-item"><label>إلى تاريخ</label><input type="date" id="filterDateTo" class="filter-input" onchange="triggerEntriesFilter()"></div>
+                    <div class="filter-item"><label>الصندوق</label><select id="filterBox" class="filter-select" onchange="triggerEntriesFilter()"><option value="all">الكل</option></select></div>
+                </div>
+            </div>
+
+            <div class="stats-grid-entries">
+                <div class="stat-box"><div class="stat-val">0</div><div class="stat-lbl">العدد</div></div>
+                <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي له</div></div>
+                <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي عليه</div></div>
+                <div class="stat-box"><div class="stat-val">0.00</div><div class="stat-lbl">إجمالي الرصيد</div></div>
+            </div>
+
+            <div class="search-wrapper">
+                <input type="text" id="entriesSearchInput" class="search-box" placeholder="ابحث عن قيد بالحساب، البيان أو التاريخ..." oninput="triggerEntriesSearch()">
+                <span class="search-icon-inside">🔍</span>
+            </div>
+
+            <div id="entriesList">
+                <div class="entry-card">
+                    <div class="card-top-row">
+                        <span class="time-stamp">2026-06-06 07:30 PM</span>
+                        <span class="status-indicator">✓ مكتمل</span>
+                    </div>
+                    <div class="account-title">حساب تجريبي من النظام</div>
+                    <div class="meta-text">العملة: ريال يمني | الموظف: المدير</div>
+                    <div class="statement-text">هذا القيد يظهر كنموذج تفاعلي للتصميم، سيقوم البوت باستبدال هذه البيانات بالقيود الفعلية فور الاتصال.</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="amount-num" style="color: var(--success-color);">+ 15,000 ريال</span>
+                    </div>
+                    <div class="bottom-actions-row">
+                        <button class="circle-action-btn" onclick="sendAction('edit_entry_action')">
+                            <div class="circle-icon">✏️</div><div class="btn-lbl">تعديل</div>
+                        </button>
+                        <button class="circle-action-btn" onclick="sendAction('delete_entry_action')">
+                            <div class="circle-icon">🗑️</div><div class="btn-lbl">حذف</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للوحة التحكم الرئيسية</button>
+        </div>
+
+        <div id="boxesPage" class="page">
+            <div class="box-container-card">
+                <div class="box-header-row">
+                    <div class="box-card-title">الصندوق الرئيسي للمؤسسة</div>
+                    <div class="box-card-icon">🏦</div>
+                </div>
+                <div class="box-balance-item"><span>الريال اليمني</span><span style="color:var(--success-color);">لكم 0.0 يمني</span></div>
+                <div class="box-balance-item"><span>الريال السعودي</span><span style="color:var(--danger-color);">عليكم 0.0 سعودي</span></div>
+                <div class="box-balance-item"><span>الدولار الأمريكي</span><span style="color:var(--danger-color);">عليكم 0.0 دولار</span></div>
+                <div class="box-balance-converted">إجمالي رصيدك بالمقابل لكم 0.0 يمني</div>
+                <div class="box-card-actions">
+                    <button class="box-action-sub-btn" onclick="sendAction('box_edit')">🖊️ تعديل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_transfer')">📈 تحويل</button>
+                    <button class="box-action-sub-btn" onclick="sendAction('box_exchange')">🛒 صرف</button>
+                </div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للوحة التحكم الرئيسية</button>
+        </div>
+
+        <div id="servicesPage" class="page">
+            <div class="grid-layout">
+                <button class="btn-item" onclick="sendAction('receipt_payment')">💵 سند قبض / صرف</button>
+                <button class="btn-item" onclick="sendAction('accounts')">👥 الحسابات</button>
+                <button class="btn-item" onclick="sendAction('currency_exchange')">💱 مصارفة العملات</button>
+                <button class="btn-item" onclick="sendAction('transfer_accounts')">🔄 تحويل بين الحسابات</button>
+                <button class="btn-item" onclick="sendAction('items')">📦 الأصناف</button>
+                <button class="btn-item" onclick="sendAction('warehouses')">🏠 المخازن</button>
+                <button class="btn-item" onclick="switchPage('utilitySystemPage')">
+                    <span class="btn-icon">💡</span><span class="btn-text">فواتير الكهرباء والماء</span>
+                </button>
+                <button class="btn-item" onclick="sendAction('reports')">📊 التقارير والإحصاء</button>
+                <button class="btn-item" onclick="sendAction('transfers')">📩 الحوالات الصادرة</button>
+                <button class="btn-item" onclick="sendAction('debt_followup')">📈 متابعة الديون</button>
+                <button class="btn-item" onclick="sendAction('staff_management')">👥 إدارة الموظفين</button>
+                <button class="btn-item" onclick="callSupport()">💬 الدعم الفني المباشر</button>
+                <button class="btn-item" onclick="sendAction('support')">🤝 تذكرة دعم فني</button>
+                <button class="btn-item renew-trigger full-width" onclick="openWhatsApp()">👑 تجديد الاشتراك (واتساب المباشر)</button>
+                <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للقائمة الرئيسية</button>
+            </div>
+        </div>
+
+        <div id="utilitySystemPage" class="page">
+            <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; white-space: nowrap; -webkit-overflow-scrolling: touch;">
+                <button onclick="filterUtilityPeriod('day', this)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">يومي</button>
+                <button onclick="filterUtilityPeriod('week', this)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">أسبوعي</button>
+                <button id="utilityDefaultTab" onclick="filterUtilityPeriod('month', this)" style="flex: 1; background: var(--gold-gradient); border: none; padding: 6px 12px; border-radius: 8px; color: #000; font-weight: 700; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">شهري</button>
+                <button onclick="filterUtilityPeriod('year', this)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">سنوي</button>
+                <button onclick="filterUtilityPeriod('all', this)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">الكل</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 6px 10px; position: relative;">
+                    <span style="font-size: 9px; color: var(--hint-color); display: block;">من</span>
+                    <input type="date" id="utilityDateFrom" style="background: transparent; border: none; color: #fff; font-family: 'Cairo'; font-size: 12px; width: 100%; outline: none; margin-top: 2px;" onchange="triggerUtilityFilter()">
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 6px 10px; position: relative;">
+                    <span style="font-size: 9px; color: var(--hint-color); display: block;">إلى</span>
+                    <input type="date" id="utilityDateTo" style="background: transparent; border: none; color: #fff; font-family: 'Cairo'; font-size: 12px; width: 100%; outline: none; margin-top: 2px;" onchange="triggerUtilityFilter()">
+                </div>
+            </div>
+            <select id="utilityAccountSelect" style="width: 100%; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; color: #fff; font-family: 'Cairo'; font-size: 13px; margin-bottom: 12px;" onchange="triggerUtilityFilter()">
+                <option value="all_accounts">جميع المشتركين والحسابات</option>
+            </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 15px;">
+                <div style="background: rgba(204,164,59,0.1); border: 1px solid rgba(204,164,59,0.2); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div class="utility-stat-val" style="font-size: 14px; font-weight: 700; color: var(--gold-color);">0</div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">عدد القيود</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div class="utility-stat-val" style="font-size: 14px; font-weight: 700; color: #fff;">0</div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">إجمالي الاستهلاك</div>
+                </div>
+                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div class="utility-stat-val" style="font-size: 14px; font-weight: 700; color: var(--success-color);">0 <span style="font-size: 8px;">يمني</span></div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">إجمالي المبلغ</div>
+                </div>
+            </div>
+            <div style="margin-bottom: 70px;">
+                <div style="font-size: 12px; color: var(--hint-color); margin-bottom: 8px; padding-right: 4px;">📋 الفواتير المصدرة مؤخراً:</div>
+                <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 12px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 8px;">
+                        <div>
+                            <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 5px;">⚡ كهرباء</span>
+                            <strong style="font-size: 13px; color: #fff;">يونس محمد عبده</strong>
+                        </div>
+                        <span style="font-size: 11px; color: var(--gold-color); font-weight: 700;">4,500 ريال</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--hint-color); margin-bottom: 10px;">
+                        <div>الاستهلاك: <strong>30 كيلو</strong></div>
+                        <div>التاريخ: 2026-06-06</div>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="sendAction('print_pdf_invoice_1')" style="flex: 1; background: #2a3a52; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">🖨️ طباعة سريعة</button>
+                        <button onclick="sendAction('print_thermal_invoice_1')" style="flex: 1; background: rgba(204,164,59,0.15); border: 1px solid var(--gold-color); border-radius: 8px; padding: 6px; color: var(--gold-color); font-family: 'Cairo'; font-size: 11px; cursor: pointer;">🔥 طباعة حرارية</button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="switchPage('invoicePage')" style="position: fixed; bottom: 16px; left: 16px; width: 52px; height: 52px; background: var(--gold-gradient); border: none; border-radius: 50%; color: #0b141c; font-size: 24px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(204,164,59,0.4); cursor: pointer; z-index: 999;">＋</button>
+            <button class="back-btn" style="margin-bottom: 20px;" onclick="switchPage('servicesPage')">↩️ رجوع لقائمة الخدمات الرئيسية</button>
+        </div>
+
+        <div id="invoicePage" class="page">
+            <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; margin-top: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+                <h3 style="color: var(--gold-color); text-align: center;">🧾 نظام فواتير الماء والكهرباء</h3>
+                <label style="font-size: 12px; color: var(--hint-color);">نوع الخدمة:</label>
+                <select id="serviceType" style="width: 100%; background: #131b24; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; margin-bottom: 12px; font-family: 'Cairo';">
+                    <option value="electricity">⚡ فاتورة كهرباء</option>
+                    <option value="water">💧 فاتورة مياه</option>
+                </select>
+                <label style="font-size: 12px; color: var(--hint-color);">اسم المشترك:</label>
+                <input type="text" id="customerName" placeholder="أدخل اسم المشترك" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; margin-bottom: 12px; font-family: 'Cairo';">
+                <label style="font-size: 12px; color: var(--hint-color);">الصندوق المالي المستلم:</label>
+                <select id="moneyBox" style="width: 100%; background: #131b24; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; margin-bottom: 12px; font-family: 'Cairo';">
+                    <option value="main_box" selected>🏦 الصندوق الرئيسي للمؤسسة (افتراضي)</option>
+                    <option value="secondary_box">📦 صندوق فرعي 1</option>
+                    <option value="emoney_box">📱 حساب سداد الإلكتروني</option>
+                </select>
+                <div id="previousReadingNotice" style="background: rgba(204, 164, 59, 0.1); border: 1px dashed var(--gold-color); padding: 8px; border-radius: 8px; font-size: 11px; color: var(--gold-color); margin-bottom: 12px;">
+                    📌 القراءة السابقة المسجلة للعميل: <strong>1042</strong> كيلو واط/جالون
+                </div>
+                <label style="font-size: 12px; color: var(--hint-color);">القراءة الحالية للعداد:</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <input type="number" id="currentReading" placeholder="0.0" style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; font-family: 'Cairo';">
+                    <button onclick="sendAction('scan_counter_camera')" style="background: #2a3a52; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0 15px; cursor: pointer; font-size: 18px;">📷</button>
+                </div>
+                <button class="btn-item" style="justify-content:center; background: var(--gold-gradient); color:#0b141c; font-weight:700; width:100%;" onclick="sendInvoiceData()">🚀 إصدار الفاتورة وحفظها PDF</button>
+                <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع لقائمة الخدمات</button>
+            </div>
+        </div>
+
+        <div id="addAccountPage" class="page">
+            <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 22px; margin-top: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.4);">
+                <h3 style="color: var(--gold-color); margin-top:0; font-family: 'Cairo', sans-serif; font-size: 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 18px;">👤 إضافة حساب حساب جديد</h3>
+                <label style="font-size: 12px; color: var(--hint-color);">اسم الحساب:</label>
+                <div style="position: relative; margin-top: 5px; margin-bottom: 14px;">
+                    <input type="text" id="accName" placeholder="أدخل اسم الحساب" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 35px 12px 12px; color: white; box-sizing: border-box; font-family: 'Cairo'; font-size: 13px;">
+                    <span style="position: absolute; right: 12px; top: 12px; color: var(--hint-color);">👤</span>
+                </div>
+                <label style="font-size: 12px; color: var(--hint-color);">رقم الهاتف:</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 14px;">
+                    <div style="position: relative; flex: 1;">
+                        <input type="tel" id="accPhone" placeholder="77xxxxxxx" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 35px 12px 12px; color: white; box-sizing: border-box; font-family: 'Cairo'; font-size: 13px;">
+                        <span style="position: absolute; right: 12px; top: 12px; color: var(--hint-color);">📞</span>
+                    </div>
+                    <button type="button" onclick="sendAction('get_phone_contacts')" style="background: rgba(204, 164, 59, 0.15); border: 1px solid var(--gold-color); border-radius: 12px; padding: 0 10px; cursor: pointer; color: var(--gold-color); font-family: 'Cairo'; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; gap: 2px;">
+                        <span style="font-size: 14px;">📇</span><span>جهات الاتصال</span>
+                    </button>
+                </div>
+                <label style="font-size: 12px; color: var(--hint-color);">التصنيف (اختياري):</label>
+                <div style="position: relative; margin-top: 5px; margin-bottom: 14px;">
+                    <select id="accCategory" style="width: 100%; background: #131b24; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; font-family: 'Cairo'; font-size: 13px;">
+                        <option value="none" selected>🔺 بدون تصنيف</option>
+                        <option value="clients">👥 عملاء / زبائن</option>
+                        <option value="suppliers">📦 موردين / شركات</option>
+                        <option value="employees">💼 موظفين</option>
+                        <option value="expenses">📉 مصاريف عمومية</option>
+                    </select>
+                </div>
+                <label style="font-size: 12px; color: var(--hint-color);">ملاحظات:</label>
+                <div style="position: relative; margin-top: 5px; margin-bottom: 16px;">
+                    <textarea id="accNotes" placeholder="أدخل أي تفاصيل إضافية عن الحساب هنا..." style="width: 100%; height: 70px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; box-sizing: border-box; font-family: 'Cairo'; font-size: 12px; resize: none;"></textarea>
+                </div>
+                <div style="background: rgba(19, 27, 36, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-family: 'Cairo'; font-size: 13px; color: #fff; font-weight: 600;">🛡️ تفعيل السقف المالي</span>
+                        <label class="switch-modern">
+                            <input type="checkbox" id="toggleCeiling" onchange="toggleCeilingInput()">
+                            <span class="slider-modern"></span>
+                        </label>
+                    </div>
+                    <div id="ceilingInputContainer" style="display: none;">
+                        <input type="number" id="ceilingAmount" placeholder="أدخل الحد الأقصى للمديونية (0.0)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--gold-color); border-radius: 10px; padding: 10px; color: white; box-sizing: border-box; font-family: 'Cairo'; font-size: 12px;">
+                    </div>
+                </div>
+                <div style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.15); border-radius: 14px; padding: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-family: 'Cairo'; font-size: 13px; color: #22c55e; font-weight: 600;">💬 تفعيل إشعارات واتساب</span>
+                    </div>
+                    <label class="switch-modern">
+                        <input type="checkbox" id="toggleWhatsapp" checked>
+                        <span class="slider-modern success-slider"></span>
+                    </label>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="saveNewAccount()" style="flex: 1; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-size: 13px; font-weight: 700; cursor: pointer;">💾 حفظ الحساب</button>
+                    <button onclick="switchPage('mainPage')" style="flex: 1; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; cursor: pointer;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // التحقق الآمن والموصى به من Telegram WebApp لمنع توقف الأزرار
+        var tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) {
+            try { 
+                tg.ready(); 
+                tg.expand(); 
+            } catch(e) {
+                console.error("خطأ أثناء تهيئة Telegram WebApp:", e);
+            }
+        } else {
+            console.warn("تنبيه: تطبيق الويب يعمل خارج بيئة تليجرام الافتراضية.");
+        }
+
+        // تعيين تاريخ اليوم كقيمة افتراضية لعناصر التاريخ عند تحميل الصفحة لضمان دقة الفلترة
+        window.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            if(document.getElementById('filterDateFrom')) document.getElementById('filterDateFrom').value = today;
+            if(document.getElementById('filterDateTo')) document.getElementById('filterDateTo').value = today;
+            if(document.getElementById('utilityDateFrom')) document.getElementById('utilityDateFrom').value = today;
+            if(document.getElementById('utilityDateTo')) document.getElementById('utilityDateTo').value = today;
+        });
+
+        function toggleSettingsDropdown() {
+            var d = document.getElementById('settingsDropdown');
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function switchPage(pageId) {
+            var dropdown = document.getElementById('settingsDropdown');
+            if(dropdown) dropdown.style.display = 'none';
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            var target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo(0,0);
+                
+                if(pageId === 'entriesPage') {
+                    sendAction('load_entries');
+                }
+            }
+        }
+
+        function openWhatsApp() {
+            var url = "https://wa.me/message/ECXIR3SSPZNGJ1";
+            if (tg && typeof tg.openLink === 'function') tg.openLink(url);
+            else window.open(url, '_blank');
+        }
+
+        function sendAction(actionName) {
+            var dataPayload = JSON.stringify({ action: actionName, system: 'التزام_برو' });
+            
+            if (tg && typeof tg.sendData === 'function') {
+                try {
+                    tg.sendData(dataPayload);
+                } catch (error) {
+                    alert("فشل إرسال البيانات للبوت: " + error.message);
+                }
+            } else {
+                console.log("إجراء محاكاة محلي:", actionName);
+            }
+        }
+
+        function callSupport() {
+            var phone = "775154169";
+            if (tg && typeof tg.sendData === 'function') {
+                tg.sendData(JSON.stringify({ action: 'contact_support', phone: phone }));
+            }
+            window.location.href = "tel:" + phone;
+        }
+
+        function toggleCeilingInput() {
+            var checkBox = document.getElementById("toggleCeiling");
+            var container = document.getElementById("ceilingInputContainer");
+            if(container && checkBox) container.style.display = checkBox.checked ? "block" : "none";
+        }
+
+        // دالة فلترة القيود بحسب الفترات (يومي، أسبوعي...) وإرسالها ديناميكياً للبوت
+        function filterEntriesByPeriod(period, buttonElement) {
+            document.querySelectorAll('.filter-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+            
+            var payload = {
+                action: 'filter_entries_period',
+                period: period,
+                system: 'التزام_برو'
+            };
+            if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(payload));
+        }
+
+        // دالة تجميع قيم الفلاتر لصفحة القيود وإرسالها بشكل موحد فور حدوث أي تغيير
+        function triggerEntriesFilter() {
+            var data = {
+                action: 'filter_entries_selectors',
+                account: document.getElementById('filterAccount').value,
+                currency: document.getElementById('filterCurrency').value,
+                staff: document.getElementById('filterStaff').value,
+                date_from: document.getElementById('filterDateFrom').value,
+                date_to: document.getElementById('filterDateTo').value,
+                box: document.getElementById('filterBox').value,
+                system: 'التزام_برو'
+            };
+            if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(data));
+        }
+
+        // دالة البحث المباشر في القيود أثناء الكتابة مع تلافي الأخطاء
+        function triggerEntriesSearch() {
+            var query = document.getElementById('entriesSearchInput').value;
+            var data = {
+                action: 'search_entries',
+                search_query: query,
+                system: 'التزام_برو'
+            };
+            if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(data));
+        }
+
+        // دالة فلاتر فواتير المياه والكهرباء بحسب الفترة
+        function filterUtilityPeriod(period, buttonElement) {
+            var parent = buttonElement.parentElement;
+            parent.querySelectorAll('button').forEach(btn => {
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#fff';
+                btn.style.fontWeight = 'normal';
+            });
+            buttonElement.style.background = 'var(--gold-gradient)';
+            buttonElement.style.color = '#000';
+            buttonElement.style.fontWeight = '700';
+
+            var payload = {
+                action: 'utility_filter_period',
+                period: period,
+                system: 'التزام_برو'
+            };
+            if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(payload));
+        }
+
+        // دالة فلترة فواتير المياه والكهرباء بحسب الحساب والتاريخ
+        function triggerUtilityFilter() {
+            var data = {
+                action: 'utility_filter_selectors',
+                date_from: document.getElementById('utilityDateFrom').value,
+                date_to: document.getElementById('utilityDateTo').value,
+                account: document.getElementById('utilityAccountSelect').value,
+                system: 'التزام_برو'
+            };
+            if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(data));
+        }
+
+        // دالة إصدار الفاتورة مع فحص المدخلات لمنع معالجة البيانات الفارغة
+        function sendInvoiceData() {
+            var customerName = document.getElementById('customerName').value.trim();
+            var currentReading = document.getElementById('currentReading').value.trim();
+
+            if (!customerName) {
+                alert('الرجاء إدخال اسم المشترك أولاً!');
+                return;
+            }
+            if (!currentReading) {
+                alert('الرجاء إدخال القراءة الحالية للعداد!');
+                return;
+            }
+
+            var data = {
+                action: 'generate_bill_pdf',
+                service_type: document.getElementById('serviceType').value,
+                customer_name: customerName,
+                money_box: document.getElementById('moneyBox').value,
+                current_reading: currentReading,
+                system: 'التزام_برو'
+            };
+            
+            if (tg && typeof tg.sendData === 'function') {
+                tg.sendData(JSON.stringify(data));
+            } else {
+                alert("تم إصدار الفاتورة (وضع محاكاة): " + JSON.stringify(data));
+            }
+        }
+
+        function saveNewAccount() {
+            var name = document.getElementById('accName').value.trim();
+            var phone = document.getElementById('accPhone').value.trim();
+            var category = document.getElementById('accCategory').value;
+            var notes = document.getElementById('accNotes').value.trim();
+            var hasCeiling = document.getElementById('toggleCeiling').checked;
+            var ceilingAmt = hasCeiling ? document.getElementById('ceilingAmount').value.trim() : '0';
+            var isWhatsapp = document.getElementById('toggleWhatsapp').checked;
+
+            if(!name) {
+                alert('الرجاء إدخال اسم الحساب أولاً!');
+                return;
+            }
+
+            var data = {
+                action: 'create_account',
+                account_name: name,
+                account_phone: phone,
+                account_category: category,
+                account_notes: notes,
+                ceiling_limit: ceilingAmt,
+                whatsapp_notify: isWhatsapp,
+                system: 'التزام_برو'
+            };
+
+            if (tg && typeof tg.sendData === 'function') {
+                tg.sendData(JSON.stringify(data));
+            } else {
+                alert("تم إرسال بيانات الحساب للبوت (وضع محاكاة):\n" + JSON.stringify(data));
+            }
+
+            // تصفير وإعادة توجيه للرئيسية
+            document.getElementById('accName').value = '';
+            document.getElementById('accPhone').value = '';
+            document.getElementById('accNotes').value = '';
+            document.getElementById('toggleCeiling').checked = false;
+            document.getElementById('ceilingInputContainer').style.display = 'none';
+            switchPage('mainPage');
+        }
+    </script>
+</body>
+</html>
