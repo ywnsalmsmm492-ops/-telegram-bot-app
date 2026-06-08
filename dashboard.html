@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التزام برو - لوحة التحكم الذكية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #131b24;
+            --bg-card: #1e293b;
+            --text-color: #ffffff;
+            --hint-color: #7e8b9a;
+            --gold-color: #cca43b;
+            --gold-gradient: linear-gradient(135deg, #cca43b, #a37f29);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            
+            --bg-main-entries: #0e1926;
+            --bg-card-entries: #172434;
+            --border-entries: #23354d;
+            --accent-gold: #f59e0b;
+            --blue-btn: #cca43b; /* توحيد الألوان للذهب المضيء حق إضافة حساب */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+        }
+
+        .webapp-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .system-status-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--hint-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-left: 5px;
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .settings-top-trigger {
+            position: absolute;
+            top: 45px; 
+            left: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .settings-top-trigger:active {
+            transform: scale(0.85); 
+        }
+
+        .settings-dropdown {
+            display: none;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--gold-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        
+        .logo-circle {
+            width: 140px;
+            height: 140px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 0 4px #131b24, 0 0 0 7px var(--gold-color), 0 8px 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+        }
+        .logo-text-inside {
+            position: absolute;
+            width: 100%;
+            bottom: 22px;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            color: #102a43;
+            z-index: 10;
+        }
+        .logo-circle svg {
+            width: 90%;
+            height: 90%;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .stats-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold-color);
+            margin: 6px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .stat-label { color: var(--hint-color); }
+        .stat-value { font-weight: 700; }
+
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        .btn-item {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 13px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: right;
+            transition: background 0.2s, transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-item:active {
+            transform: scale(0.95);
+            background: #2a3a52;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .btn-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        /* توحيد الاستايلات المضيئة والخطوط كزر إضافة حساب لجميع الأزرار الفعالة */
+        .btn-active-style {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+
+        .btn-item.boxes-trigger {
+            background: linear-gradient(135deg, #cca43b, #a37f29);
+            border: none;
+            box-shadow: 0 4px 12px rgba(204, 164, 59, 0.2);
+        }
+        .btn-item.boxes-trigger .btn-text {
+            color: #0b141c;
+            font-weight: 700;
+        }
+
+        .btn-item.all-services-trigger {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-item.renew-trigger {
+            background: var(--gold-gradient);
+            border: none;
+            box-shadow: 0 4px 15px rgba(204, 164, 59, 0.3);
+        }
+        .btn-item.renew-trigger .btn-text {
+            color: #0b141c;
+            font-weight: 700;
+        }
+
+        /* ستايل للأزرار المعطلة المخفية بلون أسود باهت */
+        .btn-disabled-style {
+            background: #111721 !important;
+            border: 1px solid rgba(255, 255, 255, 0.02) !important;
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .btn-disabled-style .btn-text, .btn-disabled-style .btn-icon {
+            color: #475569 !important;
+        }
+
+        .back-btn {
+            width: 100%;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            border-radius: 12px;
+            padding: 11px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+
+        .box-container-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .box-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+        .box-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold-color);
+        }
+        .box-balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .box-balance-converted {
+            font-size: 12px;
+            color: var(--success-color);
+            margin-top: 8px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            padding-top: 8px;
+            text-align: left;
+        }
+        .box-card-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .box-action-sub-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px;
+            border-radius: 10px;
+            color: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .switch-modern { position: relative; display: inline-block; width: 42px; height: 22px; }
+        .switch-modern input { opacity: 0; width: 0; height: 0; }
+        .slider-modern { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .3s; border-radius: 34px; }
+        .slider-modern:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider-modern { background-color: #cca43b; }
+        input:checked + .success-slider { background-color: #22c55e; }
+        input:checked + .slider-modern:before { transform: translateX(20px); }
+
+        /* ستايلات إدارة القيود المحدثة */
+        .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 12px 2px; }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); padding: 8px 18px; border-radius: 10px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; color: var(--hint-color); cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background-color: var(--gold-color); color: #000; border-color: var(--gold-color); }
+        .filters-grid { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px; margin-bottom: 14px; }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .filter-item { flex: 1; }
+        .filter-item label { display: block; font-size: 12px; color: var(--hint-color); margin-bottom: 6px; text-align: center; }
+        .filter-select, .filter-input { width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; font-family: 'Cairo'; font-size: 13px; background: var(--bg-dark); color: white; box-sizing: border-box; text-align: center; outline: none; }
+        
+        .stats-grid-entries { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stat-box { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 4px; text-align: center; }
+        .stat-val { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: white; }
+        .stat-lbl { font-size: 11px; color: var(--hint-color); font-weight: 600; }
+        
+        .search-wrapper { position: relative; margin-bottom: 16px; }
+        .search-box { width: 100%; padding: 12px 14px 12px 40px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; font-family: 'Cairo', sans-serif; font-size: 13px; box-sizing: border-box; outline: none; }
+        .search-icon-inside { position: absolute; left: 14px; top: 14px; color: var(--hint-color); }
+        
+        #entriesList { display: flex; flex-direction: column; gap: 12px; }
+        .entry-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px; }
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .time-stamp { font-size: 12px; color: var(--hint-color); }
+        .status-indicator { font-size: 12px; font-weight: 700; color: var(--gold-color); }
+        .account-title { font-size: 16px; font-weight: 700; color: white; }
+        .meta-text { font-size: 12px; color: var(--hint-color); }
+        .statement-text { font-size: 13px; color: white; margin: 8px 0 14px 0; line-height: 1.4; }
+        .amount-num { font-size: 17px; font-weight: 800; color: white; }
+        .bottom-actions-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 6px; }
+        
+        .circle-action-btn { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; flex: 1; }
+        .circle-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; background: var(--bg-dark); color: white; border: 1px solid rgba(255,255,255,0.08); }
+        .btn-lbl { font-size: 11px; font-weight: 600; color: var(--hint-color); margin-top: 5px; }
+
+        /* ستايل النوافذ المنبثقة للعمليات المحاسبية الفاخرة المضيئة */
+        .popup-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(19, 27, 36, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .popup-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid var(--gold-color);
+            border-radius: 24px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+        .popup-title {
+            color: var(--gold-color);
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+        .popup-label {
+            font-size: 12px;
+            color: var(--hint-color);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .popup-input, .popup-select {
+            width: 100%;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            font-family: 'Cairo';
+            font-size: 13px;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+            outline: none;
+        }
+        .popup-input:focus, .popup-select:focus {
+            border-color: var(--gold-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="webapp-container">
+        
+        <div class="system-status-bar">
+            <div><span class="status-dot"></span> حالة النظام: متصل بالسيرفر</div>
+            <div>التزام برو v3.2 | 🔒 آمن</div>
+        </div>
+        
+        <div class="settings-top-trigger" onclick="toggleSettingsDropdown()">⚙️</div>
+
+        <div class="logo-section">
+            <div class="logo-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="55" r="46" fill="none" stroke="#102a43" stroke-width="4"/>
+                    <path d="M60 9 A 46 46 0 0 1 103 40" fill="none" stroke="#cca43b" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="35" y="28" width="26" height="34" rx="3" fill="#102a43"/>
+                    <rect x="39" y="32" width="18" height="8" fill="#bcccdc"/>
+                    <circle cx="82" cy="70" r="13" fill="#102a43" stroke="#ffffff" stroke-width="2"/>
+                </svg>
+                <div class="logo-text-inside">التزام برو</div>
+            </div>
+            <div style="font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 12px; color: var(--hint-color); margin-top: 4px;">بوت تليجرام محاسبي ذكي</div>
+        </div>
+
+        <div id="settingsDropdown" class="settings-dropdown">
+            <div style="font-size: 14px; font-weight: 700; color: var(--gold-color); margin-bottom: 8px;">⚙️ إعدادات وتفضيلات النظام:</div>
+            <div class="grid-layout">
+                <button class="btn-item btn-active-style" onclick="sendAction('edit_profile')">📝 البيانات الشخصية</button>
+                <button class="btn-item btn-active-style" onclick="sendAction('change_password')">🔑 تغيير كلمة المرور</button>
+                <button class="btn-item btn-active-style" onclick="openCurrencyModal()">💱 العملة الافتراضية</button>
+                <button class="btn-item btn-active-style" onclick="openStaffModal()">👥 إدارة الموظفين</button>
+                <button class="btn-item btn-active-style" onclick="sendAction('toggle_notifications')">🔔 إشعارات الحساب</button>
+                <button class="btn-item full-width" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444;" onclick="logoutSecurely()">🚪 تسجيل الخروج</button>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <div class="user-header">
+                <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+                <span class="badge-premium">💼 خطة مميزة</span>
+            </div>
+            <div style="font-size: 12px; margin-bottom: 6px;">🎁 نقاطك: <strong style="color: var(--gold-color);">0</strong></div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">💰 الرصيد النقدي</span><span class="stat-value" id="globalBoxBalance" style="color:var(--success-color);">0 يمني</span></div>
+                <div class="stat-item"><span class="stat-label">📉 إجمالي عليكم</span><span class="stat-value" style="color:var(--danger-color);">0</span></div>
+                <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">📝 المعاملات</span><span class="stat-value">0</span></div>
+            </div>
+        </div>
+
+        <div id="mainPage" class="page active">
+            <div class="grid-layout">
+                <button class="btn-item boxes-trigger full-width" onclick="switchPage('boxesPage')">📦 عرض الصناديق المحاسبية</button>
+                
+                <button class="btn-item btn-active-style full-width" onclick="openEntryModal()">📝 إضافة قيد جديد</button>
+                
+                <button class="btn-item btn-active-style" onclick="switchPage('addAccountPage')">
+                    <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+                </button>
+                <button class="btn-item btn-active-style" onclick="switchPage('entriesPage')">📊 إدارة القيود</button>
+                <button class="btn-item btn-active-style" onclick="sendAction('account_statement')">📋 كشف حساب</button>
+                <button class="btn-item btn-active-style" onclick="sendAction('accounts')">👤 الحسابات</button>
+                
+                <button class="btn-item all-services-trigger full-width" onclick="switchPage('servicesPage')">
+                    <span class="btn-text" style="color: white; font-weight: 700; width: 100%; text-align: center;">📂 جميع الخدمات</span>
+                </button>
+            </div>
+        </div>
+        <div id="entriesPage" class="page">
+            <div class="filter-tabs">
+                <button class="tab-btn active" onclick="filterEntriesTime('day')">يومي</button>
+                <button class="tab-btn" onclick="filterEntriesTime('week')">أسبوعي</button>
+                <button class="tab-btn" onclick="filterEntriesTime('month')">شهري</button>
+                <button class="tab-btn" onclick="filterEntriesTime('year')">سنوي</button>
+                <button class="tab-btn" onclick="filterEntriesTime('all')">الكل</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>الحساب</label>
+                        <select class="filter-select" id="filterAccountSelect">
+                            <option value="all">الكل</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>العملة</label>
+                        <select class="filter-select">
+                            <option>الكل</option>
+                            <option>يمني</option>
+                            <option>سعودي</option>
+                            <option>دولار</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item"><label>من تاريخ</label><input type="date" class="filter-input" id="filterFromDate" value="2026-06-07"></div>
+                    <div class="filter-item"><label>إلى تاريخ</label><input type="date" class="filter-input" id="filterToDate" value="2026-06-07"></div>
+                    <div class="filter-item">
+                        <label>الصندوق</label>
+                        <select class="filter-select" id="filterBoxSelect">
+                            <option value="all">الكل</option>
+                            <option value="main">الصندوق الرئيسي</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid-entries">
+                <div class="stat-box"><div class="stat-val" id="countEntries">0</div><div class="stat-lbl">العدد</div></div>
+                <div class="stat-box"><div class="stat-val" id="totalToHim">0.00</div><div class="stat-lbl">إجمالي له</div></div>
+                <div class="stat-box"><div class="stat-val" id="totalOnHim">0.00</div><div class="stat-lbl">إجمالي عليه</div></div>
+                <div class="stat-box"><div class="stat-val" id="netBalance">0.00</div><div class="stat-lbl">إجمالي الرصيد</div></div>
+            </div>
+
+            <div class="search-wrapper">
+                <input type="text" class="search-box" id="entrySearchBox" placeholder="البحث باسم العميل..." oninput="searchCustomerEntries()">
+                <span class="search-icon-inside">🔍</span>
+            </div>
+
+            <div id="entriesList">
+                <div class="loading-text">لا توجد قيود مسجلة حالياً.</div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للوحة التحكم الرئيسية</button>
+        </div>
+
+        <div id="boxesPage" class="page">
+            <div class="box-container-card">
+                <div class="box-header-row">
+                    <div class="box-card-title" id="currentBoxTitle">الصندوق الرئيسي للمؤسسة</div>
+                    <div class="box-card-icon">🏦</div>
+                </div>
+                <div class="box-balance-item"><span>الريال اليمني</span><span style="color:var(--success-color);" id="boxYer">لكم 0.0</span></div>
+                <div class="box-balance-item"><span>الريال السعودي</span><span style="color:var(--success-color);" id="boxSar">لكم 0.0</span></div>
+                <div class="box-balance-item"><span>الدولار الأمريكي</span><span style="color:var(--success-color);" id="boxUsd">لكم 0.0</span></div>
+                <div class="box-balance-converted" id="boxTotalText">إجمالي رصيدك بالمقابل: لكم 0.0 يمني</div>
+                <div class="box-card-actions">
+                    <button class="box-action-sub-btn" onclick="openEditBoxModal()">🖊️ تعديل الاسم</button>
+                    <button class="box-action-sub-btn" onclick="openTransferModal()">📈 تحويل</button>
+                    <button class="box-action-sub-btn" onclick="openExchangeModal()">🛒 صرف ومصارفة</button>
+                </div>
+            </div>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للوحة التحكم الرئيسية</button>
+        </div>
+
+        <div id="servicesPage" class="page">
+            <div style="display: flex; gap: 6px; margin-bottom: 12px; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <button style="flex:1; background: var(--gold-gradient); border:none; padding: 10px; border-radius: 8px; color:#000; font-family:'Cairo'; font-weight:700; font-size:12px; cursor:pointer;" onclick="openEntryModal()">➕ إضافة قيد</button>
+                <button style="flex:1; background:#2a3a52; border:1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; color:#fff; font-family:'Cairo'; font-weight:600; font-size:12px; cursor:pointer;" onclick="openTransferAccountsModal()">🔄 تحويل لحساب</button>
+                <button style="flex:1; background:#2a3a52; border:1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; color:#fff; font-family:'Cairo'; font-weight:600; font-size:12px; cursor:pointer;" onclick="openExchangeModal()">💱 مصارفة</button>
+            </div>
+
+            <div class="grid-layout">
+                <button class="btn-item btn-disabled-style"><span class="btn-text">💵 سند قبض / صرف (قريباً)</span></button>
+                <button class="btn-item btn-active-style" onclick="sendAction('accounts')">👥 الحسابات الشغالة</button>
+                <button class="btn-item btn-active-style" onclick="openExchangeModal()">💱 مصارفة العملات</button>
+                <button class="btn-item btn-active-style" onclick="openTransferAccountsModal()">🔄 تحويل بين الحسابات</button>
+                <button class="btn-item btn-disabled-style"><span class="btn-text">📦 الأصناف</span></button>
+                <button class="btn-item btn-disabled-style"><span class="btn-text">🏠 المخازن</span></button>
+                
+                <button class="btn-item btn-active-style" onclick="switchPage('utilitySystemPage')">
+                    <span class="btn-icon">💡</span><span class="btn-text">فواتير الكهرباء والماء</span>
+                </button>
+                
+                <button class="btn-item btn-disabled-style"><span class="btn-text">📊 التقارير والإحصاء</span></button>
+                <button class="btn-item btn-disabled-style"><span class="btn-text">📩 الحوالات الصادرة</span></button>
+                <button class="btn-item btn-disabled-style"><span class="btn-text">📈 متابعة الديون</span></button>
+                
+                <button class="btn-item btn-active-style" onclick="openStaffModal()">👥 إدارة الموظفين</button>
+                <button class="btn-item btn-active-style" onclick="callSupport()">💬 الدعم الفني المباشر</button>
+                
+                <button class="btn-item renew-trigger full-width" onclick="openWhatsApp()">👑 تجديد الاشتراك</button>
+                <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع للقائمة الرئيسية</button>
+            </div>
+        </div>
+
+        <div id="utilitySystemPage" class="page">
+            <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; white-space: nowrap;">
+                <button onclick="filterInvoiceTime('day')" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">يومي</button>
+                <button onclick="filterInvoiceTime('week')" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">أسبوعي</button>
+                <button onclick="filterInvoiceTime('month')" style="flex: 1; background: var(--gold-gradient); border: none; padding: 6px 12px; border-radius: 8px; color: #000; font-weight: 700; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">شهري</button>
+                <button onclick="filterInvoiceTime('year')" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; color: #fff; font-family: 'Cairo'; font-size: 11px; cursor: pointer;">سنوي</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 6px 10px;">
+                    <span style="font-size: 9px; color: var(--hint-color); display: block;">من</span>
+                    <input type="date" value="2026-06-07" style="background: transparent; border: none; color: #fff; font-family: 'Cairo'; font-size: 12px; width: 100%; outline: none;">
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 6px 10px;">
+                    <span style="font-size: 9px; color: var(--hint-color); display: block;">إلى</span>
+                    <input type="date" value="2026-06-07" style="background: transparent; border: none; color: #fff; font-family: 'Cairo'; font-size: 12px; width: 100%; outline: none;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 15px;">
+                <div style="background: rgba(204,164,59,0.1); border: 1px solid rgba(204,164,59,0.2); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--gold-color);" id="invoiceCountText">0</div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">(عدد القيود)</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div style="font-size: 14px; font-weight: 700; color: #fff;" id="invoiceConsumptionText">0.00</div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">(إجمالي الاستهلاك)</div>
+                </div>
+                <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 8px; text-align: center;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--success-color);" id="invoiceSumText">0 <span style="font-size: 8px;" class="currentCurrencyLabel">يمني</span></div>
+                    <div style="font-size: 9px; color: var(--hint-color); margin-top: 2px;">(إجمالي المبلغ)</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 70px;">
+                <div style="font-size: 12px; color: var(--hint-color); margin-bottom: 8px; padding-right: 4px;">📋 الفواتير المصدرة مؤخراً:</div>
+                <div id="invoiceListContainer">
+                    <div class="loading-text">لا توجد فواتير مصدرة حالياً. واجهتك جاهزة للعمل الحقيقي ونظيفة.</div>
+                </div>
+            </div>
+            <button onclick="switchPage('invoicePage')" style="position: fixed; bottom: 16px; left: 16px; width: 52px; height: 52px; background: var(--gold-gradient); border: none; border-radius: 50%; color: #0b141c; font-size: 24px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(204,164,59,0.4); cursor: pointer; z-index: 999;">＋</button>
+            <button class="back-btn" style="margin-bottom: 20px;" onclick="switchPage('servicesPage')">↩️ رجوع لقائمة الخدمات الرئيسية</button>
+        </div>
+
+        <div id="invoicePage" class="page">
+            <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; margin-top: 15px;">
+                <h3 style="color: var(--gold-color); text-align: center;">🧾 نظام فواتير الماء والكهرباء</h3>
+                
+                <label style="font-size: 12px; color: var(--hint-color);">نوع الخدمة:</label>
+                <select id="serviceType" class="popup-select">
+                    <option value="electricity">⚡ فاتورة كهرباء</option>
+                    <option value="water">💧 فاتورة مياه</option>
+                </select>
+                
+                <label style="font-size: 12px; color: var(--hint-color);">اسم المشترك:</label>
+                <input type="text" id="customerName" placeholder="أدخل اسم المشترك" class="popup-input">
+                
+                <label style="font-size: 12px; color: var(--hint-color);">العملة للفاتورة (مزامنة):</label>
+                <select id="invoiceCurrency" class="popup-select">
+                    <option value="يمني" selected>ريال يمني</option>
+                    <option value="سعودي">ريال سعودي</option>
+                    <option value="دولار">دولار أمريكي</option>
+                </select>
+
+                <label style="font-size: 12px; color: var(--hint-color);">الصندوق المالي المستلم:</label>
+                <select id="moneyBox" class="popup-select" onclick="openSelectBoxInterface(this)">
+                    <option value="main_box" selected>🏦 الصندوق الرئيسي للمؤسسة</option>
+                </select>
+                
+                <label style="font-size: 12px; color: var(--hint-color);">القراءة الحالية للعداد:</label>
+                <input type="number" id="currentReading" placeholder="0.0" class="popup-input">
+                
+                <button class="btn-item" style="justify-content:center; background: var(--gold-gradient); color:#0b141c; font-weight:700; width:100%;" onclick="sendInvoiceData()">🚀 إصدار الفاتورة وتأكيد الترحيل</button>
+                <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع لقائمة الخدمات</button>
+            </div>
+        </div>
+
+        <div id="addAccountPage" class="page">
+            <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 22px; margin-top: 10px;">
+                <h3 style="color: var(--gold-color); margin-top:0; font-family: 'Cairo'; font-size: 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 18px;">👤 إضافة حساب جديد</h3>
+                
+                <label style="font-size: 12px; color: var(--hint-color);">اسم الحساب:</label>
+                <input type="text" id="accName" placeholder="أدخل اسم الحساب" class="popup-input">
+                
+                <label style="font-size: 12px; color: var(--hint-color);">رقم الهاتف:</label>
+                <input type="tel" id="accPhone" placeholder="77xxxxxxx" class="popup-input">
+                
+                <label style="font-size: 12px; color: var(--hint-color);">التصنيف الثابت المعين:</label>
+                <select id="accCategory" class="popup-select">
+                    <option value="none" selected>🔺 بدون تصنيف</option>
+                </select>
+                
+                <label style="font-size: 12px; color: var(--hint-color);">ملاحظات:</label>
+                <textarea id="accNotes" placeholder="أدخل أي تفاصيل إضافية هنا..." style="width: 100%; height: 70px;" class="popup-input"></textarea>
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="saveNewAccount()" style="flex: 1; background: var(--gold-gradient); color: #0b141c; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-size: 13px; font-weight: 700; cursor: pointer;">💾 حفظ الحساب</button>
+                    <button onclick="switchPage('mainPage')" style="flex: 1; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-size: 13px; font-weight: 600; cursor: pointer;">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="entryModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">📝 إضافة قيد محاسبي جديد</h3>
+            <label class="popup-label">اسم العميل أو الحساب:</label>
+            <input type="text" id="modalEntryUser" placeholder="اسم العميل (يظل ثابتاً)" class="popup-input">
+            
+            <label class="popup-label">العملة:</label>
+            <select id="modalEntryCurrency" class="popup-select">
+                <option value="يمني">ريال يمني</option>
+                <option value="سعودي">ريال سعودي</option>
+                <option value="دولار">دولار أمريكي</option>
+            </select>
+            
+            <label class="popup-label">التاريخ والوقت:</label>
+            <input type="datetime-local" id="modalEntryDate" class="popup-input">
+            
+            <label class="popup-label">الصندوق المالي المتزامن:</label>
+            <select id="modalEntryBox" class="popup-select" onclick="openSelectBoxInterface(this)">
+                <option value="main">🏦 الصندوق الرئيسي</option>
+            </select>
+            
+            <label class="popup-label">المبلغ / السعر (يحذف تلقائياً):</label>
+            <input type="number" id="modalEntryAmount" placeholder="0.0" class="popup-input">
+            
+            <label class="popup-label">البيان (يحذف تلقائياً):</label>
+            <input type="text" id="modalEntryDetails" placeholder="اكتب البيان هنا..." class="popup-input">
+            
+            <button style="width: 100%; background: var(--gold-gradient); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-family: 'Cairo'; cursor: pointer;" onclick="executeProcess('entry')">🚀 ترحيل القيد بنجاح</button>
+            <button style="width: 100%; background: none; border: 1px solid #ef4444; color: #ef4444; padding: 10px; border-radius: 12px; margin-top: 8px; font-family: 'Cairo'; cursor: pointer;" onclick="closeAllModals()">❌ خروج للوحة التحكم</button>
+        </div>
+    </div>
+
+    <div id="transferAccountsModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">🔄 عملية تحويل بين الحسابات</h3>
+            <label class="popup-label">تعديل التاريخ:</label>
+            <input type="date" id="accTransferDate" class="popup-input">
+            <label class="popup-label">من حساب العميل:</label>
+            <input type="text" id="accTransferFrom" placeholder="اسم الحساب الأول" class="popup-input">
+            <label class="popup-label">إلى حساب (اختر الحساب الثاني):</label>
+            <input type="text" id="accTransferTo" placeholder="اختر الحساب الثاني" class="popup-input">
+            <label class="popup-label">العملة وعرض المتبقي بالصندوق:</label>
+            <select id="accTransferCurrency" class="popup-select">
+                <option value="يمني">ريال يمني (المتبقي: 0.0)</option>
+                <option value="سعودي">ريال سعودي (المتبقي: 0.0)</option>
+                <option value="دولار">دولار أمريكي (المتبقي: 0.0)</option>
+            </select>
+            <label class="popup-label">المبلغ المراد تحويله:</label>
+            <input type="number" id="accTransferAmount" placeholder="0.0" class="popup-input">
+            <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:12px; border-radius:12px; font-weight:700;" onclick="executeProcess('transfer_acc')">🚀 إتمام الترحيل والتحويل</button>
+            <button style="width:100%; background:none; border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:12px; margin-top:8px;" onclick="closeAllModals()">❌ خروج</button>
+        </div>
+    </div>
+
+    <div id="exchangeModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">💱 مصارفة صندوق العملات</h3>
+            <label class="popup-label">تعديل التاريخ:</label>
+            <input type="date" id="exchangeDate" class="popup-input">
+            <label class="popup-label">من عملة (المتبقي والمتاحة):</label>
+            <select id="exchangeFromCurrency" class="popup-select">
+                <option value="سعودي">ريال سعودي (رصيدك الحالي المتبقي متاح)</option>
+                <option value="دولار">دولار أمريكي (رصيدك الحالي المتبقي متاح)</option>
+                <option value="يمني">ريال يمني (رصيدك الحالي المتبقي متاح)</option>
+            </select>
+            <label class="popup-label">إلى عملة المقابلة:</label>
+            <select id="exchangeToCurrency" class="popup-select">
+                <option value="يمني">ريال يمني</option>
+                <option value="سعودي">ريال سعودي</option>
+                <option value="دولار">دولار أمريكي</option>
+            </select>
+            <label class="popup-label">سعر الصرف والمصارفة المتفق عليه:</label>
+            <input type="number" id="exchangeRate" placeholder="أدخل السعر المقابل" class="popup-input">
+            <label class="popup-label">المبلغ الصافي:</label>
+            <input type="number" id="exchangeAmount" placeholder="0.0" class="popup-input">
+            <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:12px; border-radius:12px; font-weight:700;" onclick="executeProcess('exchange')">🚀 ترحيل المصارفة بنجاح</button>
+            <button style="width:100%; background:none; border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:12px; margin-top:8px;" onclick="closeAllModals()">❌ خروج</button>
+        </div>
+    </div>
+
+    <div id="selectBoxModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">📦 اختيار وتحديد الصندوق المحاسبي</h3>
+            <input type="text" placeholder="🔍 ابحث عن صندوق مسجل لديك..." class="popup-input" style="margin-bottom: 10px;">
+            <div id="boxOptionsContainer" style="max-height: 150px; overflow-y:auto; margin-bottom: 14px;">
+                <div style="padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; cursor:pointer;" onclick="selectBoxFinal('main', '🏦 الصندوق الرئيسي للمؤسسة')">🏦 الصندوق الرئيسي للمؤسسة (افتراضي وثابت)</div>
+            </div>
+            <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px;">
+                <label class="popup-label">إضافة صندوق مالي جديد ومخصص:</label>
+                <input type="text" id="newBoxNameInput" placeholder="اكتب اسم الصندوق الجديد..." class="popup-input">
+                <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:10px; border-radius:10px; font-weight:700;" onclick="addNewCustomBox()">➕ إنشاء وحفظ الصندوق الجديد</button>
+            </div>
+            <button style="width:100%; background:none; border:1px solid #ef4444; color:#ef4444; padding:8px; border-radius:10px; margin-top:10px;" onclick="document.getElementById('selectBoxModal').style.display='none'">غلق النافذة</button>
+        </div>
+    </div>
+
+    <div id="editBoxModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">🖊️ تعديل اسم الصندوق</h3>
+            <label class="popup-label">الاسم الحالي المستهدف للتعديل:</label>
+            <input type="text" id="editBoxNameField" value="الصندوق الرئيسي للمؤسسة" class="popup-input">
+            <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:12px; border-radius:12px; font-weight:700;" onclick="saveBoxNameUpdated()">💾 حفظ الاسم الجديد وتعديله</button>
+            <button style="width:100%; background:none; border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:12px; margin-top:8px;" onclick="closeAllModals()">❌ إلغاء</button>
+        </div>
+    </div>
+
+    <div id="currencySettingsModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">💱 تحديد العملة الافتراضية للنظام</h3>
+            <label class="popup-label">اختر العملة الأساسية (يمني ثابتة تلقائياً):</label>
+            <select id="systemDefaultCurrencySelect" class="popup-select" onchange="syncSystemCurrencyWithAllViews()">
+                <option value="يمني" selected>ريال يمني (ثابت افتراضي)</option>
+                <option value="سعودي">ريال سعودي</option>
+                <option value="دولار">دولار أمريكي</option>
+            </select>
+            <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:12px; border-radius:12px; font-weight:700;" onclick="closeAllModals()">💾 تأكيد المزامنة مع كافة الحقول</button>
+        </div>
+    </div>
+
+    <div id="staffModal" class="popup-modal">
+        <div class="popup-content">
+            <h3 class="popup-title">👥 إضافة موظف جديد وضبط الحساب</h3>
+            <label class="popup-label">اسم الموظف بالكامل:</label>
+            <input type="text" id="staffNameInput" placeholder="أدخل اسم الموظف" class="popup-input">
+            <label class="popup-label">رقم هاتف الموظف (سيكون اسم المستخدم للدخول):</label>
+            <input type="tel" id="staffPhoneInput" placeholder="77xxxxxxx" class="popup-input">
+            <label class="popup-label">كلمة السر الخاصة به الحماية:</label>
+            <input type="password" id="staffPassInput" placeholder="أدخل كلمة مرور قوية" class="popup-input">
+            
+            <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:12px; margin-bottom:12px;">
+                <span class="popup-label" style="font-weight:700; color:var(--gold-color);">🛡️ تحديد الصلاحيات البرمجية للموظف:</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:12px;">إضافة القيود والترحيل المعاملات</span>
+                    <input type="checkbox" id="permAdd" checked>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px;">تعديل وحذف العمليات المالية من النظام</span>
+                    <input type="checkbox" id="permEdit">
+                </div>
+            </div>
+
+            <button style="width:100%; background:var(--gold-gradient); color:#000; border:none; padding:12px; border-radius:12px; font-weight:700;" onclick="saveStaffAccountCreated()">💾 حفظ وإرسال بيانات الموظف</button>
+            <button style="width:100%; background:none; border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:12px; margin-top:8px;" onclick="closeAllModals()">❌ إلغاء</button>
+        </div>
+    </div>
+
+    <div id="successReportModal" class="popup-modal">
+        <div class="popup-content" style="border-color: var(--success-color);">
+            <div style="text-align:center; font-size:40px; margin-bottom:10px;">🎉</div>
+            <h3 class="popup-title" style="color:var(--success-color); border-bottom-color:rgba(34,197,94,0.2);" id="successMainMessage">تم إضافة وتم ترحيل المعاملة بنجاح</h3>
+            
+            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:14px; font-size:12px; margin-bottom:15px; line-height:1.6;" id="successDetailsPrintBlock">
+                </div>
+
+            <label class="popup-label" style="text-align:center; font-weight:700;">🖨️ خيارات الطباعة والمشاركة الفورية:</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                <button style="background:#2a3a52; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px; border-radius:8px; font-family:'Cairo'; font-size:12px; cursor:pointer;" onclick="firePrintJob('thermal')">🔥 طباعة حرارية سريعة</button>
+                <button style="background:#2a3a52; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px; border-radius:8px; font-family:'Cairo'; font-size:12px; cursor:pointer;" onclick="firePrintJob('pdf')">📄 مشاركة ملف PDF</button>
+            </div>
+            <button style="width:100%; background:rgba(204,164,59,0.15); border:1px solid var(--gold-color); color:var(--gold-color); padding:10px; border-radius:8px; font-family:'Cairo'; font-size:12px; margin-bottom:10px;" onclick="firePrintJob('png')">🖼️ حفظ كصورة PNG سريعة</button>
+            
+            <button style="width: 100%; background: none; border: 1px solid #ef4444; color: #ef4444; padding: 10px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer;" onclick="closeSuccessAndRouteToDashboard()">❌ خروج إلى لوحة التحكم</button>
+        </div>
+    </div>
+
+    <script>
+        var tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+
+        let customAddedBoxes = [];
+        let globalTargetBoxInputRef = null;
+
+        function toggleSettingsDropdown() {
+            var d = document.getElementById('settingsDropdown');
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function switchPage(pageId) {
+            var dropdown = document.getElementById('settingsDropdown');
+            if(dropdown) dropdown.style.display = 'none';
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            var target = document.getElementById(pageId);
+            if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+        }
+
+        function openWhatsApp() {
+            var url = "https://wa.me/message/ECXIR3SSPZNGJ1";
+            if (tg && typeof tg.openLink === 'function') tg.openLink(url);
+            else window.open(url, '_blank');
+        }
+
+        function sendAction(actionName) {
+            var dataPayload = JSON.stringify({ action: actionName, system: 'التزام_برو' });
+            if (tg && typeof tg.sendData === 'function') {
+                try { tg.sendData(dataPayload); } catch (e) { alert("فشل الإرسال: " + e.message); }
+            } else { console.log("إجراء محاكي: " + actionName); }
+        }
+
+        function callSupport() {
+            var phone = "775154169";
+            window.location.href = "tel:" + phone;
+        }
+
+        // فتح النوافذ والـ Modals المحاسبية المختلفة
+        function openEntryModal() {
+            document.getElementById('entryModal').style.display = 'flex';
+            // تعيين التاريخ والوقت الحاليين تلقائياً للسهولة
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('modalEntryDate').value = now.toISOString().slice(0,16);
+        }
+        function openTransferAccountsModal() {
+            document.getElementById('transferAccountsModal').style.display = 'flex';
+            document.getElementById('accTransferDate').value = new Date().toISOString().slice(0,10);
+        }
+        function openExchangeModal() {
+            document.getElementById('exchangeModal').style.display = 'flex';
+            document.getElementById('exchangeDate').value = new Date().toISOString().slice(0,10);
+        }
+        function openCurrencyModal() {
+            document.getElementById('currencySettingsModal').style.display = 'flex';
+        }
+        function openStaffModal() {
+            document.getElementById('staffModal').style.display = 'flex';
+        }
+        function openEditBoxModal() {
+            document.getElementById('editBoxModal').style.display = 'flex';
+        }
+        function closeAllModals() {
+            document.querySelectorAll('.popup-modal').forEach(m => m.style.display = 'none');
+        }
+
+        // واجهة اختيار الصناديق المحاسبية الديناميكية
+        function openSelectBoxInterface(inputElementRef) {
+            globalTargetBoxInputRef = inputElementRef;
+            const container = document.getElementById('boxOptionsContainer');
+            container.innerHTML = `<div style="padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; cursor:pointer;" onclick="selectBoxFinal('main', '🏦 الصندوق الرئيسي للمؤسسة')">🏦 الصندوق الرئيسي للمؤسسة (افتراضي وثابت)</div>`;
+            
+            customAddedBoxes.forEach(b => {
+                container.innerHTML += `<div style="padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; cursor:pointer;" onclick="selectBoxFinal('${b.id}', '📦 ${b.name}')">📦 ${b.name}</div>`;
+            });
+            document.getElementById('selectBoxModal').style.display = 'flex';
+        }
+
+        function selectBoxFinal(id, label) {
+            if (globalTargetBoxInputRef) {
+                // التأكد من وجود خيار بقاعدة الاختيارات وتثبيته
+                let hasOption = Array.from(globalTargetBoxInputRef.options).some(opt => opt.value === id);
+                if (!hasOption) {
+                    let newOpt = document.createElement('option');
+                    newOpt.value = id;
+                    newOpt.text = label;
+                    globalTargetBoxInputRef.add(newOpt);
+                }
+                globalTargetBoxInputRef.value = id;
+            }
+            document.getElementById('selectBoxModal').style.display = 'none';
+        }
+
+        function addNewCustomBox() {
+            const name = document.getElementById('newBoxNameInput').value;
+            if(!name) { alert("أدخل اسم الصندوق الجديد أولاً!"); return; }
+            const boxId = 'box_' + Date.now();
+            customAddedBoxes.push({ id: boxId, name: name });
+            document.getElementById('newBoxNameInput').value = '';
+            alert("تم إضافة الصندوق بنجاح لقائمتك المحاسبية!");
+            // تحديث العرض بالواجهة
+            if(globalTargetBoxInputRef) openSelectBoxInterface(globalTargetBoxInputRef);
+        }
+
+        function saveBoxNameUpdated() {
+            const newName = document.getElementById('editBoxNameField').value;
+            document.getElementById('currentBoxTitle').innerText = newName;
+            alert("تم حفظ وتحديث اسم الصندوق بنجاح!");
+            closeAllModals();
+        }
+
+        // مزامنة العملة الافتراضية مع الخدمات كافة كفواتير الكهرباء والقيود تلقائياً
+        function syncSystemCurrencyWithAllViews() {
+            const selectedCurr = document.getElementById('systemDefaultCurrencySelect').value;
+            document.getElementById('modalEntryCurrency').value = selectedCurr;
+            document.getElementById('invoiceCurrency').value = selectedCurr;
+            document.querySelectorAll('.currentCurrencyLabel').forEach(el => el.innerText = selectedCurr);
+        }
+
+        // الحفاظ على أمن البيانات عند الخروج دون مسح أي معاملة
+        function logoutSecurely() {
+            alert("تم تسجيل الخروج بأمان. معاملاتك وقيودك ومستنداتك محفوظة بالكامل ومحمية على السيرفر 100%.");
+            sendAction('logout');
+            closeAllModals();
+            switchPage('mainPage');
+        }
+
+        function saveStaffAccountCreated() {
+            const name = document.getElementById('staffNameInput').value;
+            const phone = document.getElementById('staffPhoneInput').value;
+            const pass = document.getElementById('staffPassInput').value;
+            if(!name || !phone || !pass) { alert("الرجاء تعبئة كافة بيانات الموظف!"); return; }
+            
+            const payload = { action: 'create_staff_user', staff_name: name, staff_username: phone, staff_password: pass };
+            if(tg && tg.sendData) tg.sendData(JSON.stringify(payload));
+            
+            alert(`تم إنشاء حساب الموظف بنجاح!\nاسم المستخدم: ${phone}\nكلمة المرور: ${pass}\nجاري توجيه البيانات له عبر البوت.`);
+            document.getElementById('staffNameInput').value = '';
+            document.getElementById('staffPhoneInput').value = '';
+            document.getElementById('staffPassInput').value = '';
+            closeAllModals();
+        }
+
+        // دالة تنفيذ ومعالجة ترحيل العمليات المختلفة مع استبقاء البنود الأساسية
+        function executeProcess(type) {
+            let detailsHtml = '';
+            let payload = { action: 'process_accounting_entry', process_type: type };
+
+            if (type === 'entry') {
+                const user = document.getElementById('modalEntryUser').value;
+                const currency = document.getElementById('modalEntryCurrency').value;
+                const date = document.getElementById('modalEntryDate').value;
+                const amount = document.getElementById('modalEntryAmount').value;
+                const desc = document.getElementById('modalEntryDetails').value;
+
+                if(!user || !amount) { alert("الرجاء كتابة اسم الحساب والمبلغ!"); return; }
+
+                detailsHtml = `
+                    <b>📌 نوع المعاملة:</b> قيد محاسبي جديد<br>
+                    <b>👤 الحساب/العميل:</b> ${user} (مستبقى)<br>
+                    <b>🪙 العملة المعينة:</b> ${currency} (مستبقى)<br>
+                    <b>📅 التاريخ والوقت:</b> ${date} (مستبقى)<br>
+                    <b>💵 المبلغ المالي:</b> ${amount} ${currency}<br>
+                    <b>📝 البيان والشرح:</b> ${desc}
+                `;
+                payload.user = user; payload.currency = currency; payload.date = date; payload.amount = amount; payload.description = desc;
+
+                // تنفيذ طلب حذف وتفريغ السعر والبيان فقط واستبقاء الباقي
+                document.getElementById('modalEntryAmount').value = '';
+                document.getElementById('modalEntryDetails').value = '';
+            } 
+            else if (type === 'transfer_acc') {
+                const date = document.getElementById('accTransferDate').value;
+                const from = document.getElementById('accTransferFrom').value;
+                const to = document.getElementById('accTransferTo').value;
+                const curr = document.getElementById('accTransferCurrency').value;
+                const amt = document.getElementById('accTransferAmount').value;
+
+                if(!from || !to || !amt) { alert("الرجاء ملء بيانات التحويل بالكامل!"); return; }
+
+                detailsHtml = `
+                    <b>📌 نوع المعاملة:</b> تحويل مالي بين الحسابات<br>
+                    <b>📅 تاريخ القيد:</b> ${date}<br>
+                    <b>📤 من حساب:</b> ${from}<br>
+                    <b>📥 إلى حساب:</b> ${to}<br>
+                    <b>🪙 العملة المتزامنة:</b> ${curr}<br>
+                    <b>💵 المبلغ المحول:</b> ${amt}
+                `;
+                payload.date = date; payload.from_account = from; payload.to_account = to; payload.currency = curr; payload.amount = amt;
+            }
+            else if (type === 'exchange') {
+                const date = document.getElementById('exchangeDate').value;
+                const fromCurr = document.getElementById('exchangeFromCurrency').value;
+                const toCurr = document.getElementById('exchangeToCurrency').value;
+                const rate = document.getElementById('exchangeRate').value;
+                const amt = document.getElementById('exchangeAmount').value;
+
+                if(!rate || !amt) { alert("الرجاء ملء خانات الصرف والمصارفة!"); return; }
+
+                detailsHtml = `
+                    <b>📌 نوع المعاملة:</b> مصارفة عملات الصندوق<br>
+                    <b>📅 تاريخ العملية:</b> ${date}<br>
+                    <b>📉 من عملة:</b> ${fromCurr}<br>
+                    <b>📈 إلى عملة المقابل:</b> ${toCurr}<br>
+                    <b>📊 سعر المصارفة:</b> ${rate}<br>
+                    <b>💵 المبلغ الصافي:</b> ${amt}
+                `;
+                payload.date = date; payload.from_currency = fromCurr; payload.to_currency = toCurr; payload.rate = rate; payload.amount = amt;
+            }
+
+            // عرض شاشة النجاح المحاسبية الموحدة وتفاصيل المعاملة
+            document.getElementById('successDetailsPrintBlock').innerHTML = detailsHtml;
+            document.getElementById('successReportModal').style.display = 'flex';
+            
+            if(tg && tg.sendData) tg.sendData(JSON.stringify(payload));
+        }
+
+        function firePrintJob(printType) {
+            let typeLabel = "طباعة حرارية سريعة للمطابع المحمولة";
+            if (printType === 'pdf') typeLabel = "توليد مستند ومشاركة ملف PDF عبر تليجرام";
+            if (printType === 'png') typeLabel = "عمل لقطة شاشة وحفظ الفاتورة كصورة PNG بالاستوديو";
+            
+            alert(`جاري معالجة طلبك الفوري: [${typeLabel}] بنجاح تام!`);
+            sendAction(`print_action_${printType}`);
+        }
+
+        function closeSuccessAndRouteToDashboard() {
+            closeAllModals();
+            switchPage('mainPage');
+        }
+
+        // دوال البحث وفلترة الوقت لضمان تفعيل مربعات الإحصائيات والأقواس
+        function searchCustomerEntries() {
+            const query = document.getElementById('entrySearchBox').value;
+            console.log("جاري البحث عن العميل: " + query);
+        }
+        function filterEntriesTime(period) {
+            document.querySelectorAll('#entriesPage .tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            alert(`تم فلترة إحصائيات القيود على فترة: ${period}`);
+        }
+        function filterInvoiceTime(period) {
+            alert(`تم فلترة إحصائيات الفواتير والقيود لـ: ${period}`);
+        }
+
+        function sendInvoiceData() {
+            const name = document.getElementById('customerName').value;
+            const reading = document.getElementById('currentReading').value;
+            const curr = document.getElementById('invoiceCurrency').value;
+            if(!name || !reading) { alert("الرجاء إدخال اسم المشترك والقراءة الحالية للعداد!"); return; }
+
+            const detailsHtml = `
+                <b>📌 نوع الخدمة:</b> فاتورة استهلاك وبنية تحتية<br>
+                <b>👤 اسم المشترك:</b> ${name}<br>
+                <b>🪙 العملة المتزامنة:</b> ${curr}<br>
+                <b>🔢 قراءة العداد الحالية:</b> ${reading} كيلو واط/جالون<br>
+                <b>🏦 الصندوق المالي:</b> الصندوق الرئيسي للمؤسسة
+            `;
+
+            // تحديث الأقواس البيضاء لإظهار الاستهلاك والعدد الكلي ديناميكياً
+            document.getElementById('invoiceCountText').innerText = "1";
+            document.getElementById('invoiceConsumptionText').innerText = reading;
+            document.getElementById('invoiceSumText').innerHTML = `${parseFloat(reading) * 150} <span style="font-size: 8px;">${curr}</span>`;
+
+            // إدراج الفاتورة بالجدول بدلاً من الفاتورة المحذوفة ليونس محمد عبده
+            const container = document.getElementById('invoiceListContainer');
+            container.innerHTML = `
+                <div class="invoice-glass-card" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 12px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 8px;">
+                        <div>
+                            <span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 5px;">✓ رحلت</span>
+                            <strong style="font-size: 13px; color: #fff;">${name}</strong>
+                        </div>
+                        <span style="font-size: 11px; color: var(--gold-color); font-weight: 700;">${parseFloat(reading) * 150} ${curr}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--hint-color);">
+                        <div>الاستهلاك: <strong>${reading} كيلو</strong></div>
+                        <div>التاريخ: اليوم</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('successDetailsPrintBlock').innerHTML = detailsHtml;
+            document.getElementById('successReportModal').style.display = 'flex';
+        }
+
+        function saveNewAccount() {
+            var name = document.getElementById('accName').value;
+            var phone = document.getElementById('accPhone').value;
+            if(!name) { alert('الرجاء إدخال اسم الحساب أولاً!'); return; }
+
+            var data = { action: 'create_account', account_name: name, account_phone: phone, account_category: 'none' };
+            if (tg && typeof tg.sendData === 'function') { tg.sendData(JSON.stringify(data)); }
+
+            alert("تم إضافة وتم ترحيل المعاملة بنجاح\nتم حفظ الحساب الجديد وتعيينه بدون تصنيف.");
+            document.getElementById('accName').value = '';
+            document.getElementById('accPhone').value = '';
+            switchPage('mainPage');
+        }
+    </script>
+</body>
+</html>
