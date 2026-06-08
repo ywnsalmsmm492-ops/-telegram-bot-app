@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التزام برو - لوحة التحكم الذكية 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-deep: #0A0F1D;
+            --bg-card: #1E293B;
+            --bg-card-hover: #273449;
+            --accent: #06B6D4;
+            --accent-glow: #00F2FE;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --success: #10B981;
+            --danger: #EF4444;
+            --border-light: rgba(255,255,255,0.08);
+            --border-accent: rgba(6,182,212,0.5);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            margin: 0;
+            padding: 14px;
+            -webkit-user-select: none;
+            user-select: none;
+            background-image: radial-gradient(circle at 20% 10%, rgba(0,242,254,0.08), transparent 40%),
+                              radial-gradient(circle at 80% 90%, rgba(6,182,212,0.06), transparent 40%);
+            background-attachment: fixed;
+        }
+        .webapp-container { width: 100%; max-width: 450px; margin: 0 auto; position: relative; }
+        .system-status-bar {
+            background: rgba(30,41,59,0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            margin-left: 6px;
+            box-shadow: 0 0 10px var(--success);
+        }
+        .logo-section { text-align: center; margin: 10px 0 20px; }
+        .logo-circle {
+            width: 100px; height: 100px;
+            background: #fff;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center; align-items: center;
+            box-shadow: 0 0 0 5px var(--bg-deep), 0 0 0 7px var(--accent), 0 8px 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+        .logo-circle svg { width: 85%; height: 85%; }
+        .user-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .user-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px; margin-bottom: 10px; font-size: 13px;
+        }
+        .badge-premium {
+            background: var(--accent);
+            color: #000;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 11px;
+            box-shadow: 0 2px 8px rgba(0,242,254,0.4);
+        }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 8px 12px;
+            display: flex; justify-content: space-between; font-size: 12px;
+        }
+        .stat-label { color: var(--text-secondary); }
+        .stat-value { font-weight: 700; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full-width { grid-column: span 2; }
+        .btn-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 14px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: right;
+            transition: all 0.2s;
+            width: 100%;
+            color: var(--text);
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .btn-item:active { transform: scale(0.96); background: var(--bg-card-hover); border-color: var(--accent); }
+        .btn-icon { font-size: 18px; }
+        .btn-text { font-size: 13px; font-weight: 600; }
+        .accent-btn {
+            background: var(--accent) !important;
+            border: none !important;
+            color: #000 !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+        .back-btn {
+            width: 100%;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 14px;
+            padding: 12px;
+            color: var(--danger);
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .invoice-glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        input, select, textarea {
+            background: var(--bg-deep) !important;
+            border: 1px solid var(--border-light) !important;
+            color: #fff !important;
+            border-radius: 12px;
+            padding: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            width: 100%;
+            outline: none;
+            margin-top: 8px;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent) !important; }
+        label { font-size: 12px; color: var(--text-secondary); font-weight: 600; display: block; margin-top: 14px; }
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-accent);
+            border-radius: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .tab-switch {
+            display: flex; gap: 6px; margin-bottom: 20px;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .tab-btn-modal {
+            flex: 1; padding: 10px; text-align: center;
+            border-radius: 10px; background: transparent; border: none;
+            color: var(--text-secondary); font-weight: 700; cursor: pointer;
+        }
+        .tab-btn-modal.active { background: var(--accent); color: #000; }
+        .filter-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            padding: 8px 18px; border-radius: 12px;
+            font-weight: 700; color: var(--text-secondary); white-space: nowrap; cursor: pointer;
+        }
+        .tab-btn.active { background: var(--accent); color: #000; }
+        .success-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        .success-card {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: 24px;
+            padding: 20px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,242,254,0.2);
+        }
+        .search-wrapper { position: relative; margin-bottom: 16px; }
+        .search-box {
+            width: 100%; padding: 12px 40px 12px 14px;
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: 14px; color: white; font-size: 13px; outline: none;
+        }
+        .search-icon-inside { position: absolute; left: 14px; top: 14px; color: var(--text-secondary); }
+        .stats-grid-entries { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stat-box { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; padding: 12px 2px; text-align: center; }
+        .stat-val { font-size: 13px; font-weight: 800; color: white; }
+        .stat-lbl { font-size: 10px; color: var(--text-secondary); }
+        .switch-modern { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch-modern input { opacity: 0; width: 0; height: 0; }
+        .slider-modern {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background: #334155; border-radius: 34px; transition: .3s;
+        }
+        .slider-modern:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider-modern { background: var(--accent); }
+        input:checked + .slider-modern:before { transform: translateX(20px); }
+    </style>
+</head>
+<body>
+<div class="webapp-container">
+    <div class="system-status-bar">
+        <div><span class="status-dot"></span> متصل | التزام برو v4.0</div>
+        <div>🔒 آمن</div>
+    </div>
+    <div class="logo-section">
+        <div class="logo-circle">
+            <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="55" r="46" fill="none" stroke="#0F172A" stroke-width="4"/>
+                <path d="M60 9 A 46 46 0 0 1 103 40" fill="none" stroke="#06B6D4" stroke-width="4"/>
+                <rect x="35" y="28" width="26" height="34" rx="3" fill="#0F172A"/>
+                <rect x="39" y="32" width="18" height="8" fill="#1E293B"/>
+                <rect x="39" y="44" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="46" y="44" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="53" y="44" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="39" y="49" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="46" y="49" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="53" y="49" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="39" y="54" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="46" y="54" width="4" height="3" fill="#fff" opacity="0.8"/>
+                <rect x="53" y="54" width="4" height="3" fill="#06B6D4"/>
+                <rect x="65" y="42" width="5" height="20" fill="#0F172A"/>
+                <rect x="73" y="34" width="5" height="28" fill="#0F172A"/>
+                <rect x="81" y="25" width="5" height="37" fill="#0F172A"/>
+                <path d="M58 48 L68 38 L76 33 L85 22" fill="none" stroke="#06B6D4" stroke-width="3"/>
+                <rect x="48" y="40" width="28" height="34" rx="2" fill="#fff" stroke="#0F172A" stroke-width="2"/>
+                <line x1="53" y1="46" x2="71" y2="46" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="82" cy="70" r="13" fill="#0F172A" stroke="#fff" stroke-width="2"/>
+                <path d="M75 70 L89 64 L86 76 L82 72 L79 74 Z" fill="#fff"/>
+                <path d="M82 72 L86 64 L79 70 Z" fill="#1E293B"/>
+            </svg>
+        </div>
+        <div style="font-weight:800; font-size:25px; color:#fff; margin-top:10px;">التزام <span style="color:#06B6D4;">برو</span></div>
+    </div>
+        <div class="user-card">
+        <div class="user-header">
+            <div>👤 المستخدم: <strong>المدير (admin)</strong></div>
+            <span class="badge-premium">💼 خطة مميزة</span>
+        </div>
+        <div style="font-size:12px; margin:10px 0;">🎁 نقاط: <strong style="color:var(--accent);">0 نقطة</strong></div>
+        <div class="stats-grid">
+            <div class="stat-item"><span class="stat-label">💰 النقدي</span><span class="stat-value" style="color:var(--success);">0 يمني</span></div>
+            <div class="stat-item"><span class="stat-label">📉 عليكم</span><span class="stat-value" style="color:var(--danger);">0</span></div>
+            <div class="stat-item"><span class="stat-label">👥 الحسابات</span><span class="stat-value" id="statAccounts">0</span></div>
+            <div class="stat-item"><span class="stat-label">📝 القيود</span><span class="stat-value" id="statEntries">0</span></div>
+        </div>
+    </div>
+
+    <!-- الصفحة الرئيسية -->
+    <div id="mainPage" class="page active">
+        <div class="grid-layout">
+            <button class="btn-item accent-btn full-width" onclick="openEntryModal('entry')">
+                <span class="btn-icon">📝</span><span class="btn-text">إضافة قيد</span>
+            </button>
+            <button class="btn-item" onclick="switchPage('addAccountPage')">
+                <span class="btn-icon">➕</span><span class="btn-text">إضافة حساب</span>
+            </button>
+            <button class="btn-item" onclick="switchPage('entriesPage')">
+                <span class="btn-icon">📊</span><span class="btn-text">إدارة القيود</span>
+            </button>
+            <button class="btn-item" onclick="switchPage('boxesPage')">
+                <span class="btn-icon">📦</span><span class="btn-text">عرض الصناديق</span>
+            </button>
+            <button class="btn-item full-width" onclick="switchPage('servicesPage')">
+                <span class="btn-icon">📂</span><span class="btn-text">جميع الخدمات</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- صفحة إضافة حساب -->
+    <div id="addAccountPage" class="page">
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent); margin-top:0;">👤 إضافة حساب</h3>
+            <label>اسم الحساب:</label>
+            <input type="text" id="accName" placeholder="أدخل اسم الحساب">
+            <label>رقم الهاتف الجوال:</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="tel" id="accPhone" placeholder="77xxxxxxx" style="flex:1;">
+                <button onclick="openContacts()" style="background:var(--bg-card); border:1px solid var(--border-accent); color:var(--accent); padding:10px; border-radius:10px; font-weight:700; white-space:nowrap;">📇 جهات الاتصال</button>
+            </div>
+            <label>تصنيف الحساب:</label>
+            <select id="accCategory" disabled>
+                <option selected>🔺 بدون تصنيف عام (ثابت)</option>
+            </select>
+            <label>ملاحظات إضافية:</label>
+            <textarea id="accNotes" rows="2" placeholder="ملاحظات..."></textarea>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="saveAccount()" class="accent-btn" style="flex:1; padding:12px;">💾 حفظ</button>
+                <button onclick="switchPage('mainPage')" class="back-btn" style="flex:1; margin:0;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة إدارة القيود -->
+    <div id="entriesPage" class="page">
+        <div class="filter-tabs">
+            <button class="tab-btn active" onclick="filterEntries('all')">الكل</button>
+            <button class="tab-btn" onclick="filterEntries('day')">يومي</button>
+            <button class="tab-btn" onclick="filterEntries('week')">أسبوعي</button>
+            <button class="tab-btn" onclick="filterEntries('month')">شهري</button>
+            <button class="tab-btn" onclick="filterEntries('year')">سنوي</button>
+            <button class="tab-btn" onclick="filterEntries('custom')">مخصص</button>
+        </div>
+        <div class="stats-grid-entries">
+            <div class="stat-box"><div class="stat-val" id="entCount">0</div><div class="stat-lbl">العدد</div></div>
+            <div class="stat-box"><div class="stat-val" style="color:var(--success);" id="entCredit">0.00</div><div class="stat-lbl">إجمالي له</div></div>
+            <div class="stat-box"><div class="stat-val" style="color:var(--danger);" id="entDebit">0.00</div><div class="stat-lbl">إجمالي عليه</div></div>
+            <div class="stat-box"><div class="stat-val" id="entBalance">0.00</div><div class="stat-lbl">الرصيد</div></div>
+        </div>
+        <div class="search-wrapper">
+            <input type="text" class="search-box" placeholder="ابحث عن قيد..." oninput="displayEntries()">
+            <span class="search-icon-inside">🔍</span>
+        </div>
+        <div id="entriesList"></div>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- صفحة الصناديق -->
+    <div id="boxesPage" class="page">
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">📦 الصناديق</h3>
+            <div id="boxesList"></div>
+            <button onclick="addNewBox()" class="accent-btn" style="width:100%; margin-top:12px;">➕ إضافة صندوق جديد</button>
+            <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+        </div>
+    </div>
+
+    <!-- صفحة الخدمات -->
+    <div id="servicesPage" class="page">
+        <div class="grid-layout">
+            <button class="btn-item" onclick="switchPage('moneyTransferPage')"><span class="btn-icon">💱</span><span class="btn-text">حوالة مالية</span></button>
+            <button class="btn-item" onclick="openEntryModal('transfer')"><span class="btn-icon">🔄</span><span class="btn-text">تحويل بين الحسابات</span></button>
+            <button class="btn-item" onclick="openEntryModal('exchange')"><span class="btn-icon">💹</span><span class="btn-text">مصارفة</span></button>
+            <button class="btn-item" onclick="switchPage('addInvoicePage')"><span class="btn-icon">⚡</span><span class="btn-text">إضافة فاتورة</span></button>
+            <button class="btn-item" onclick="switchPage('receiptPaymentPage')"><span class="btn-icon">💵</span><span class="btn-text">سند قبض / صرف</span></button>
+            <button class="btn-item" onclick="switchPage('staffPage')"><span class="btn-icon">👥</span><span class="btn-text">الموظفين والصلاحيات</span></button>
+            <button class="btn-item" onclick="switchPage('settingsPage')"><span class="btn-icon">⚙️</span><span class="btn-text">الإعدادات</span></button>
+            <button class="btn-item" onclick="switchPage('accountStatementPage')"><span class="btn-icon">📋</span><span class="btn-text">كشف حساب</span></button>
+            <button class="btn-item" onclick="switchPage('referralPage')"><span class="btn-icon">🔗</span><span class="btn-text">رابط الإحالة</span></button>
+            <button class="btn-item" onclick="switchPage('pointsPage')"><span class="btn-icon">🎁</span><span class="btn-text">استبدال النقاط</span></button>
+            <button class="btn-item full-width" onclick="switchPage('mainPage')">↩️ رجوع</button>
+        </div>
+    </div>
+
+    <!-- باقي الصفحات سيتم بناؤها ديناميكيًا في JavaScript -->
+    <div id="moneyTransferPage" class="page"></div>
+    <div id="addInvoicePage" class="page"></div>
+    <div id="receiptPaymentPage" class="page"></div>
+    <div id="staffPage" class="page"></div>
+    <div id="settingsPage" class="page"></div>
+    <div id="accountStatementPage" class="page"></div>
+    <div id="referralPage" class="page"></div>
+    <div id="pointsPage" class="page"></div>
+    <div id="accountsDirectoryPage" class="page"></div>
+</div>
+
+<!-- المودالات -->
+<div id="entryModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="tab-switch" id="entryTabs">
+            <button class="tab-btn-modal active" data-mode="entry">➕ إضافة قيد</button>
+            <button class="tab-btn-modal" data-mode="transfer">🔄 تحويل</button>
+            <button class="tab-btn-modal" data-mode="exchange">💱 مصارفة</button>
+        </div>
+        <div id="entryFields"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="submitEntry()" class="accent-btn" style="flex:1; padding:12px;">💾 حفظ</button>
+            <button onclick="closeEntryModal()" class="back-btn" style="flex:1; margin:0;">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<div id="successOverlay" class="success-overlay">
+    <div class="success-card" id="successContent"></div>
+</div>
+
+<div id="deleteConfirmModal" class="modal-overlay">
+    <div class="modal-box" style="text-align:center;">
+        <h3 style="color:var(--danger);">⚠️ تأكيد الحذف</h3>
+        <p style="margin:16px 0;">هل أنت متأكد من حذف هذا القيد؟</p>
+        <div style="display:flex; gap:10px;">
+            <button id="confirmDeleteBtn" class="accent-btn" style="flex:1; background:var(--danger)!important;">نعم، احذف</button>
+            <button onclick="document.getElementById('deleteConfirmModal').style.display='none'" class="back-btn" style="flex:1; margin:0;">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== قاعدة بيانات محلية للمحاكاة ==========
+const DB = {
+    accounts: [],
+    boxes: [{ name: 'الصندوق الرئيسي', balances: { YER: 0, SAR: 0, USD: 0 } }],
+    entries: [],
+    staff: [],
+    settings: { defaultCurrency: 'YER', companyName: 'التزام برو' },
+    points: 0,
+    freeOperations: 0
+};
+if(localStorage.getItem('iltizamProDB')) {
+    try { Object.assign(DB, JSON.parse(localStorage.getItem('iltizamProDB'))); } catch(e) {}
+}
+function saveDB() { localStorage.setItem('iltizamProDB', JSON.stringify(DB)); }
+function updateStats() {
+    document.getElementById('statAccounts').textContent = DB.accounts.length;
+    document.getElementById('statEntries').textContent = DB.entries.length;
+}
+let currentEntryMode = 'entry';
+let pendingDeleteId = null;
+
+// ========== التنقل ==========
+function switchPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    if(pageId === 'entriesPage') displayEntries();
+    if(pageId === 'boxesPage') renderBoxes();
+    if(pageId === 'moneyTransferPage') renderMoneyTransfer();
+    if(pageId === 'addInvoicePage') renderAddInvoice();
+    if(pageId === 'receiptPaymentPage') renderReceiptPayment();
+    if(pageId === 'staffPage') renderStaffPage();
+    if(pageId === 'settingsPage') renderSettingsPage();
+    if(pageId === 'accountStatementPage') renderAccountStatement();
+    if(pageId === 'referralPage') renderReferralPage();
+    if(pageId === 'pointsPage') renderPointsPage();
+    if(pageId === 'accountsDirectoryPage') renderAccountsDirectory();
+    updateStats();
+    window.scrollTo(0,0);
+}
+
+// ========== إضافة حساب ==========
+function saveAccount() {
+    let name = document.getElementById('accName').value.trim();
+    let phone = document.getElementById('accPhone').value.trim();
+    let notes = document.getElementById('accNotes').value.trim();
+    if(!name) return alert('الاسم مطلوب');
+    DB.accounts.push({ name, phone, notes, category: 'بدون تصنيف' });
+    saveDB();
+    alert('تمت الإضافة بنجاح');
+    document.getElementById('accName').value = '';
+    document.getElementById('accPhone').value = '';
+    document.getElementById('accNotes').value = '';
+    switchPage('mainPage');
+}
+
+// ========== جهات الاتصال ==========
+function openContacts() {
+    if(window.Telegram?.WebApp) {
+        window.Telegram.WebApp.requestContact().then(c => {
+            if(c && c.phone_number) document.getElementById('accPhone').value = c.phone_number;
+        }).catch(() => alert('تعذر الوصول لجهات الاتصال'));
+    } else {
+        alert('الميزة تعمل داخل تيليجرام فقط. في المتصفح يمكنك كتابة الرقم يدوياً.');
+    }
+}
+
+// ========== المودال الموحد ==========
+function openEntryModal(mode) {
+    currentEntryMode = mode;
+    document.getElementById('entryModal').style.display = 'flex';
+    document.querySelectorAll('#entryTabs .tab-btn-modal').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#entryTabs [data-mode="${mode}"]`).classList.add('active');
+    renderEntryFields();
+}
+function closeEntryModal() { document.getElementById('entryModal').style.display = 'none'; }
+function renderEntryFields() {
+    let html = '';
+    if(currentEntryMode === 'entry') {
+        html = `
+            <select id="entryAccount"><option value="">اختر الحساب</option>${DB.accounts.map(a => `<option>${a.name}</option>`).join('')}</select>
+            <select id="entryCurrency"><option>يمني</option><option>سعودي</option><option>دولار</option></select>
+            <input type="number" placeholder="المبلغ" id="entryAmount">
+            <input placeholder="البيان" id="entryStatement">
+            <input type="date" id="entryDate" value="${new Date().toISOString().split('T')[0]}">
+            <select id="entryBox">${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+        `;
+    } else if(currentEntryMode === 'transfer') {
+        html = `
+            <select id="transferFrom">${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+            <select id="transferTo">${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+            <input type="number" placeholder="المبلغ" id="transferAmount">
+            <input placeholder="ملاحظات" id="transferNote">
+            <input type="date" value="${new Date().toISOString().split('T')[0]}">
+        `;
+    } else if(currentEntryMode === 'exchange') {
+        html = `
+            <select id="exchangeBox">${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+            <div id="exchangeBalance" style="margin:8px 0; color:var(--accent); font-size:12px;"></div>
+            <select id="exchangeFrom"><option>يمني</option><option>سعودي</option><option>دولار</option></select>
+            <select id="exchangeTo"><option>سعودي</option><option>دولار</option><option>يمني</option></select>
+            <input type="number" placeholder="المبلغ" id="exchangeAmount">
+            <input type="number" placeholder="سعر الصرف" id="exchangeRate">
+            <input placeholder="ملاحظات" id="exchangeNote">
+            <input type="date" value="${new Date().toISOString().split('T')[0]}">
+        `;
+    }
+    document.getElementById('entryFields').innerHTML = html;
+    if(currentEntryMode === 'exchange') updateExchangeBalance();
+}
+function submitEntry() {
+    let entry = { date: new Date().toISOString().split('T')[0] };
+    if(currentEntryMode === 'entry') {
+        entry.type = 'قيد';
+        entry.account = document.getElementById('entryAccount')?.value || '';
+        entry.currency = document.getElementById('entryCurrency')?.value || 'يمني';
+        entry.amount = document.getElementById('entryAmount')?.value || '0';
+        entry.statement = document.getElementById('entryStatement')?.value || '';
+        entry.box = document.getElementById('entryBox')?.value || DB.boxes[0].name;
+        entry.date = document.getElementById('entryDate')?.value || entry.date;
+    } else if(currentEntryMode === 'transfer') {
+        entry.type = 'تحويل';
+        entry.from = document.getElementById('transferFrom')?.value || DB.boxes[0].name;
+        entry.to = document.getElementById('transferTo')?.value || '';
+        entry.amount = document.getElementById('transferAmount')?.value || '0';
+        entry.statement = document.getElementById('transferNote')?.value || '';
+    } else {
+        entry.type = 'مصارفة';
+        entry.box = document.getElementById('exchangeBox')?.value || DB.boxes[0].name;
+        entry.fromCurrency = document.getElementById('exchangeFrom')?.value || 'يمني';
+        entry.toCurrency = document.getElementById('exchangeTo')?.value || 'سعودي';
+        entry.amount = document.getElementById('exchangeAmount')?.value || '0';
+        entry.rate = document.getElementById('exchangeRate')?.value || '1';
+        entry.statement = document.getElementById('exchangeNote')?.value || '';
+    }
+    DB.entries.push(entry);
+    // إذا تحويل بين صناديق، أضف قيد مزدوج
+    if(currentEntryMode === 'transfer' && entry.from && entry.to) {
+        DB.entries.push({
+            type: 'قيد مزدوج', date: entry.date,
+            account: 'تحويل داخلي', amount: entry.amount,
+            statement: `تحويل من ${entry.from} إلى ${entry.to}`, box: entry.to
+        });
+    }
+    saveDB();
+    closeEntryModal();
+    showSuccess(entry);
+function showSuccess(entry) {
+    document.getElementById('successContent').innerHTML = `
+        <h3 style="color:var(--accent);">✅ تم حفظ وترحيل المعاملة بنجاح! 🚀</h3>
+        <p>النوع: ${entry.type}</p>
+        <p>المبلغ: ${entry.amount || '0'}</p>
+        <p>البيان: ${entry.statement || ''}</p>
+        <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="window.print()" class="accent-btn">🖨️ طباعة سريعة</button>
+            <button onclick="saveAsPDF()" style="background:var(--bg-card); border:1px solid var(--border-light); padding:8px; border-radius:8px; color:#fff; cursor:pointer;">🖨️ تصدير PDF</button>
+            <button onclick="saveAsPNG()" style="background:var(--bg-card); border:1px solid var(--border-light); padding:8px; border-radius:8px; color:#fff; cursor:pointer;">💾 حفظ كصورة PNG</button>
+        </div>
+        <button onclick="document.getElementById('successOverlay').style.display='none'; updateStats();" class="back-btn" style="margin-top:16px;">إغلاق</button>
+    `;
+    document.getElementById('successOverlay').style.display = 'flex';
+}
+
+function saveAsPDF() {
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    doc.text("إيصال التزام برو", 10, 10);
+    doc.save('إيصال.pdf');
+}
+function saveAsPNG() {
+    html2canvas(document.querySelector('.success-card')).then(canvas => {
+        let a = document.createElement('a');
+        a.href = canvas.toDataURL();
+        a.download = 'إيصال.png';
+        a.click();
+    }).catch(() => alert('تعذر حفظ الصورة. تأكد من الاتصال.'));
+}
+
+// ========== عرض القيود ==========
+function displayEntries(filter = 'all') {
+    let list = document.getElementById('entriesList');
+    if(!list) return;
+    let entries = DB.entries;
+    if(filter === 'day') {
+        let today = new Date().toISOString().split('T')[0];
+        entries = entries.filter(e => e.date === today);
+    }
+    // إحصائيات سريعة
+    let count = entries.length;
+    let credit = 0, debit = 0;
+    entries.forEach(e => {
+        let amt = parseFloat(e.amount) || 0;
+        if(e.type.includes('تحويل') || e.type.includes('مصارفة')) debit += amt;
+        else credit += amt;
+    });
+    document.getElementById('entCount').textContent = count;
+    document.getElementById('entCredit').textContent = credit.toFixed(2);
+    document.getElementById('entDebit').textContent = debit.toFixed(2);
+    document.getElementById('entBalance').textContent = (credit - debit).toFixed(2);
+
+    list.innerHTML = entries.length === 0 ? '<p style="color:var(--text-secondary); text-align:center;">لا توجد قيود مسجلة بعد.</p>' :
+    entries.map((e, i) => `
+        <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:12px; padding:12px; margin-bottom:8px;">
+            <strong>${e.account || e.type}</strong> - ${e.amount || ''} (${e.currency || ''})
+            <div style="font-size:11px; color:var(--text-secondary);">${e.statement || ''}</div>
+            <div style="font-size:10px; color:var(--text-secondary);">${e.date || ''}</div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <button onclick="editEntry(${i})" style="flex:1; background:var(--bg-card); border:1px solid var(--border-light); padding:6px; border-radius:8px; color:#fff; cursor:pointer;">✏️ تعديل</button>
+                <button onclick="confirmDeleteEntry(${i})" style="flex:1; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:6px; border-radius:8px; color:var(--danger); cursor:pointer;">🗑️ حذف</button>
+            </div>
+        </div>
+    `).join('');
+}
+function filterEntries(filter) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    displayEntries(filter);
+}
+function confirmDeleteEntry(index) {
+    pendingDeleteId = index;
+    document.getElementById('deleteConfirmModal').style.display = 'flex';
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        DB.entries.splice(pendingDeleteId, 1);
+        saveDB();
+        displayEntries();
+        document.getElementById('deleteConfirmModal').style.display = 'none';
+        updateStats();
+    };
+}
+function editEntry(index) {
+    let entry = DB.entries[index];
+    if(!entry) return;
+    if(entry.type === 'قيد') openEntryModal('entry');
+    else if(entry.type === 'تحويل') openEntryModal('transfer');
+    else openEntryModal('exchange');
+    // يمكن تحميل بيانات القيد في الحقول لاحقاً
+}
+
+// ========== الصناديق ==========
+function renderBoxes() {
+    let list = document.getElementById('boxesList');
+    if(!list) return;
+    list.innerHTML = DB.boxes.map((b,i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-deep); border-radius:10px; margin-bottom:8px;">
+            <span>${b.name}</span>
+            <div>
+                <button onclick="editBoxName(${i})" style="background:var(--bg-card); border:1px solid var(--border-light); padding:4px 10px; border-radius:6px; color:#fff; cursor:pointer; font-size:11px;">✏️ تعديل</button>
+            </div>
+        </div>
+    `).join('');
+}
+function addNewBox() {
+    let name = prompt('اسم الصندوق الجديد:');
+    if(name && name.trim()) {
+        DB.boxes.push({ name: name.trim(), balances: { YER: 0, SAR: 0, USD: 0 } });
+        saveDB();
+        renderBoxes();
+    }
+}
+function editBoxName(index) {
+    let newName = prompt('الاسم الجديد:', DB.boxes[index].name);
+    if(newName && newName.trim()) {
+        DB.boxes[index].name = newName.trim();
+        saveDB();
+        renderBoxes();
+    }
+}
+
+// ========== حوالة مالية ==========
+function renderMoneyTransfer() {
+    document.getElementById('moneyTransferPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <div style="display:flex; gap:10px; margin-bottom:16px;">
+                <button id="sendTab" class="tab-btn-modal active" onclick="setTransferMode('send')">📤 إرسال</button>
+                <button id="receiveTab" class="tab-btn-modal" onclick="setTransferMode('receive')">📥 استلام</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <select style="flex:1;"><option>الحساب</option></select>
+                <select style="flex:1;" id="transferBox" onchange="updateTransferBoxBalance()">
+                    ${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <input type="number" placeholder="المبلغ" style="flex:2;" id="transferAmount">
+                <select style="flex:1;" id="currencySelect" onchange="updateTransferBoxBalance()">
+                    <option value="YER">يمني</option><option value="SAR">سعودي</option><option value="USD">دولار</option>
+                </select>
+            </div>
+            <div style="background:#0F172A; border-radius:12px; padding:12px; margin-top:12px;">
+                <div>العمولة: <span id="commissionDisplay">0</span> <span id="commissionCurrency">يمني</span></div>
+                <div id="netProfitRow" style="display:none;">الربح الصافي: <span id="netProfit">0</span> يمني</div>
+            </div>
+            <button onclick="pasteClipboard()" style="margin-top:12px; background:var(--bg-card); border:1px solid var(--border-accent); color:var(--accent); padding:10px; border-radius:10px; width:100%;">📋 لصق تفاصيل الحوالة</button>
+            <input placeholder="اسم المرسل" style="margin-top:10px;">
+            <input placeholder="اسم المستلم" style="margin-top:10px;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input placeholder="رقم الحوالة" style="flex:1;">
+                <input placeholder="شركة التحويل" style="flex:1;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="saveTransfer()" class="accent-btn" style="flex:1;">💾 حفظ</button>
+                <button onclick="switchPage('servicesPage')" class="back-btn" style="flex:1; margin:0;">إلغاء</button>
+            </div>
+        </div>
+    `;
+}
+function setTransferMode(mode) {
+    document.getElementById('sendTab').classList.toggle('active', mode==='send');
+    document.getElementById('receiveTab').classList.toggle('active', mode==='receive');
+    document.getElementById('netProfitRow').style.display = mode==='send' ? 'block' : 'none';
+}
+function updateTransferBoxBalance() { /* تحديث الأرصدة */ }
+function pasteClipboard() {
+    navigator.clipboard.readText().then(t => alert('تم اللصق: ' + t)).catch(() => alert('تعذر الوصول للحافظة'));
+}
+function saveTransfer() {
+    let entry = { type: 'حوالة', date: new Date().toISOString().split('T')[0], amount: document.getElementById('transferAmount')?.value || '0' };
+    DB.entries.push(entry);
+    saveDB();
+    showSuccess(entry);
+}
+
+// ========== إضافة فاتورة (عدادات) ==========
+function renderAddInvoice() {
+    document.getElementById('addInvoicePage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent); margin-top:0;">⚡ إضافة فاتورة</h3>
+            <label>نوع الخدمة:</label>
+            <select id="serviceType"><option>كهرباء تجارية</option><option>كهرباء عمومية</option><option>مياه</option></select>
+            <label>اسم المشترك:</label>
+            <select id="customerSelect" onchange="updatePreviousReading()">
+                <option value="">اختر العميل</option>
+                ${DB.accounts.map(a => `<option>${a.name}</option>`).join('')}
+            </select>
+            <label>العملة:</label>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <label><input type="radio" name="invCurrency" value="يمني" checked> يمني</label>
+                <label><input type="radio" name="invCurrency" value="سعودي"> سعودي</label>
+                <label><input type="radio" name="invCurrency" value="دولار"> دولار</label>
+            </div>
+            <label>الصندوق المستلم:</label>
+            <select id="invBox">${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+            <div style="background:rgba(6,182,212,0.08); border:1px dashed var(--border-accent); border-radius:10px; padding:10px; margin-top:14px;">
+                📌 القراءة السابقة: <strong id="prevReading">0.0</strong> كيلو / جالون
+            </div>
+            <label>القراءة الحالية:</label>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="currentReading" placeholder="أدخل القراءة" style="flex:1;">
+                <button onclick="scanMeter()" style="background:var(--bg-card); border:1px solid var(--border-light); padding:0 16px; border-radius:10px; color:#fff; cursor:pointer; font-size:18px;">📷</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="saveInvoice()" class="accent-btn" style="flex:1;">💾 حفظ الفاتورة</button>
+                <button onclick="switchPage('servicesPage')" class="back-btn" style="flex:1; margin:0;">إلغاء</button>
+            </div>
+        </div>
+    `;
+    window.currentInvoiceCustomer = '';
+}
+function updatePreviousReading() {
+    let name = document.getElementById('customerSelect').value;
+    let lastEntry = DB.entries.filter(e => e.account === name && e.type === 'فاتورة').pop();
+    document.getElementById('prevReading').textContent = lastEntry ? lastEntry.currentReading || '0.0' : '0.0';
+}
+function scanMeter() { alert('الكاميرا ستعمل داخل تطبيق تليجرام.'); }
+function saveInvoice() {
+    let current = document.getElementById('currentReading')?.value;
+    let customer = document.getElementById('customerSelect')?.value;
+    if(!customer || !current) return alert('يرجى اختيار العميل وإدخال القراءة.');
+    let prev = parseFloat(document.getElementById('prevReading').textContent) || 0;
+    if(parseFloat(current) < prev) return alert('⚠️ خطأ: القراءة الحالية لا يمكن أن تكون أقل من السابقة.');
+    let entry = {
+        type: 'فاتورة', account: customer,
+        amount: (parseFloat(current) - prev) * 1.5,
+        statement: `فاتورة ${document.getElementById('serviceType').value}`,
+        currency: document.querySelector('input[name="invCurrency"]:checked').value,
+        box: document.getElementById('invBox').value,
+        currentReading: current,
+        date: new Date().toISOString().split('T')[0]
+    };
+    DB.entries.push(entry);
+    saveDB();
+    showSuccess(entry);
+}
+
+// ========== سند قبض/صرف ==========
+function renderReceiptPayment() {
+    document.getElementById('receiptPaymentPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <div style="display:flex; gap:10px; margin-bottom:16px;">
+                <button id="receiptTab" class="tab-btn-modal active" onclick="setReceiptMode('receipt')">📥 سند قبض</button>
+                <button id="paymentTab" class="tab-btn-modal" onclick="setReceiptMode('payment')">📤 سند صرف</button>
+            </div>
+            <div id="receiptFields">
+                <label>رقم السند:</label><input value="تلقائي" disabled>
+                <label>التاريخ:</label><input type="date" value="${new Date().toISOString().split('T')[0]}">
+                <label id="partyLabel">قُبض من السيد:</label>
+                <select>${DB.accounts.map(a => `<option>${a.name}</option>`).join('')}</select>
+                <label>المبلغ:</label><input type="number" placeholder="المبلغ">
+                <label>العملة:</label><select><option>يمني</option><option>سعودي</option><option>دولار</option></select>
+                <label>الصندوق:</label><select>${DB.boxes.map(b => `<option>${b.name}</option>`).join('')}</select>
+                <label>البيان:</label><input placeholder="سبب القبض">
+            </div>
+            <button onclick="saveReceipt()" class="accent-btn" style="width:100%; margin-top:20px;">💾 ترحيل وحفظ السند</button>
+            <button onclick="switchPage('servicesPage')" class="back-btn">إلغاء</button>
+        </div>
+    `;
+}
+function setReceiptMode(mode) {
+    document.getElementById('receiptTab').classList.toggle('active', mode==='receipt');
+    document.getElementById('paymentTab').classList.toggle('active', mode==='payment');
+    document.getElementById('partyLabel').textContent = mode==='receipt' ? 'قُبض من السيد:' : 'يُصرف للسيد:';
+}
+function saveReceipt() {
+    let entry = { type: 'سند', date: new Date().toISOString().split('T')[0], amount: '0' };
+    DB.entries.push(entry);
+    saveDB();
+    showSuccess(entry);
+}
+
+// ========== الموظفين ==========
+function renderStaffPage() {
+    document.getElementById('staffPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">👥 إدارة الموظفين والصلاحيات</h3>
+            <div id="staffList"></div>
+            <button onclick="addStaff()" class="accent-btn" style="width:100%;">➕ إضافة موظف جديد</button>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+    displayStaff();
+}
+function displayStaff() {
+    let list = document.getElementById('staffList');
+    if(!list) return;
+    list.innerHTML = DB.staff.length === 0 ? '<p>لا يوجد موظفين.</p>' :
+    DB.staff.map((s,i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-deep); border-radius:10px; margin-bottom:8px;">
+            <span>${s.name} - ${s.phone}</span>
+            <label class="switch-modern">
+                <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleStaff(${i})">
+                <span class="slider-modern"></span>
+            </label>
+        </div>
+    `).join('');
+}
+function addStaff() {
+    let name = prompt('اسم الموظف:');
+    let phone = prompt('رقم الهاتف (سيكون اسم المستخدم):');
+    let pass = prompt('كلمة المرور:');
+    if(name && phone && pass) {
+        DB.staff.push({ name, phone, password: pass, active: true, permissions: ['إضافة قيد','إضافة فاتورة','إضافة حساب','كشف حساب'] });
+        saveDB();
+        displayStaff();
+        alert(`تم إضافة الموظف.\nرابط البوت: t.me/EltizamProBot\nاسم المستخدم: ${phone}\nكلمة المرور: ${pass}`);
+    }
+}
+function toggleStaff(index) {
+    DB.staff[index].active = !DB.staff[index].active;
+    saveDB();
+}
+
+// ========== الإعدادات ==========
+function renderSettingsPage() {
+    document.getElementById('settingsPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">⚙️ الإعدادات</h3>
+            <label>العملة الافتراضية:</label>
+            <select id="defaultCurrency" onchange="updateDefaultCurrency()">
+                <option value="YER" ${DB.settings.defaultCurrency==='YER'?'selected':''}>يمني</option>
+                <option value="SAR" ${DB.settings.defaultCurrency==='SAR'?'selected':''}>سعودي</option>
+                <option value="USD" ${DB.settings.defaultCurrency==='USD'?'selected':''}>دولار</option>
+            </select>
+            <button onclick="logout()" style="background:var(--danger); border:none; padding:12px; border-radius:12px; color:#fff; width:100%; margin-top:20px; font-weight:700;">🚪 تسجيل الخروج</button>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+}
+function updateDefaultCurrency() {
+    DB.settings.defaultCurrency = document.getElementById('defaultCurrency').value;
+    saveDB();
+    alert('تم تعميم العملة على جميع الخدمات.');
+}
+function logout() {
+    localStorage.removeItem('iltizamProSession');
+    alert('تم تسجيل الخروج بأمان. البيانات محفوظة.');
+    location.reload();
+}
+
+// ========== كشف حساب ==========
+function renderAccountStatement() {
+    document.getElementById('accountStatementPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">📋 كشف حساب</h3>
+            <select id="statementAccount" onchange="updateStatement()">
+                <option value="">اختر الحساب</option>
+                ${DB.accounts.map(a => `<option>${a.name}</option>`).join('')}
+            </select>
+            <div class="stats-grid-entries" style="margin-top:14px;">
+                <div class="stat-box"><div class="stat-val" style="color:var(--success);">0</div><div class="stat-lbl">إجمالي له</div></div>
+                <div class="stat-box"><div class="stat-val" style="color:var(--danger);">0</div><div class="stat-lbl">إجمالي عليه</div></div>
+                <div class="stat-box"><div class="stat-val">0</div><div class="stat-lbl">الرصيد</div></div>
+            </div>
+            <div id="statementEntries"></div>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+}
+function updateStatement() { /* تصفية القيود حسب الحساب */ }
+
+// ========== الإحالة ==========
+function renderReferralPage() {
+    document.getElementById('referralPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">🔗 رابط الإحالة</h3>
+            <input value="t.me/EltizamProBot?start=admin" readonly>
+            <button onclick="navigator.clipboard.writeText('t.me/EltizamProBot?start=admin')" class="accent-btn" style="width:100%; margin-top:8px;">📋 نسخ الرابط</button>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+}
+
+// ========== استبدال النقاط ==========
+function renderPointsPage() {
+    document.getElementById('pointsPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">🎁 استبدال النقاط</h3>
+            <p>رصيدك الحالي: <strong style="color:var(--accent);">${DB.points} نقطة</strong></p>
+            <button onclick="redeemPoints()" class="accent-btn" style="width:100%;">🎁 استبدال 100 نقطة بـ 150 عملية مجانية</button>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+}
+function redeemPoints() {
+    if(DB.points >= 100) {
+        DB.points -= 100;
+        DB.freeOperations += 150;
+        saveDB();
+        alert('تم استبدال النقاط بنجاح!');
+        renderPointsPage();
+    } else alert('نقاطك غير كافية.');
+}
+
+// ========== دليل الحسابات ==========
+function renderAccountsDirectory() {
+    document.getElementById('accountsDirectoryPage').innerHTML = `
+        <div class="invoice-glass-card">
+            <h3 style="color:var(--accent);">🗂️ دليل الحسابات</h3>
+            <div id="directoryList"></div>
+            <button onclick="addDirectoryAccount()" class="accent-btn" style="width:100%; margin-top:12px;">➕ إضافة حساب فرعي</button>
+            <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+        </div>
+    `;
+}
+
+// ========== تشغيل أولي ==========
+updateStats();
+switchPage('mainPage');
+</script>
+</body>
+</html>
