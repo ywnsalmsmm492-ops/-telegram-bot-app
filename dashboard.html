@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>التزام برو - لوحة التحكم الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --border-light: rgba(255, 255, 255, 0.08);
+            --text-color: #f8fafc;
+            --hint-color: #94a3b8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --cyan-neon: #00F2FE;
+            --dark-navy: #0A0F1D;
+            --green-gradient: linear-gradient(135deg, #10b981, #059669);
+            --blue-gradient: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--dark-navy);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .webapp-container { max-width: 420px; margin: 0 auto; position: relative; }
+        .page { display: none; }
+        .page.active { display: block; animation: fade 0.2s ease; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 12px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            transition: 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+        .btn:active {
+            transform: scale(0.97);
+            border-color: var(--cyan-neon);
+            background: rgba(0,242,254,0.06);
+            box-shadow: 0 0 12px rgba(0,242,254,0.15);
+        }
+        .btn.boxes { background: var(--green-gradient); color: #fff; font-weight: 800; border: none; }
+        .btn.entry-btn { background: linear-gradient(135deg, #00F2FE, #0ea5e9); color: #000; font-weight: 800; border: none; }
+        .btn.services-btn { background: var(--blue-gradient); color: #fff; font-weight: 700; border: none; }
+        .back-btn {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 14px;
+            padding: 12px;
+            color: var(--danger-color);
+            font-weight: 700;
+            text-align: center;
+            margin-top: 16px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .box-card {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05));
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .currency-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .currency-popup.show { display: flex; }
+        .currency-popup-content {
+            background: #0f172a;
+            border: 1px solid var(--cyan-neon);
+            border-radius: 16px;
+            padding: 16px;
+            width: 250px;
+            text-align: center;
+        }
+        .currency-opt {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .input-field {
+            background: rgba(10,15,29,0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+            outline: none;
+            font-family: 'Cairo';
+            font-size: 13px;
+        }
+        .toast {
+            position: fixed;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0A0F1D;
+            border: 1px solid var(--cyan-neon);
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 12px;
+            z-index: 10002;
+            transition: bottom 0.3s;
+            white-space: nowrap;
+        }
+        .toast.show { bottom: 20px; }
+        .system-status-bar {
+            background: rgba(15,23,42,0.6);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .settings-top-trigger {
+            position: absolute;
+            top: 46px;
+            right: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        .logo-section { text-align: center; margin-bottom: 14px; }
+        .logo-circle {
+            width: 70px; height: 70px; background: #fff; border-radius: 50%;
+            display: inline-flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 0 4px var(--dark-navy), 0 0 0 6px var(--cyan-neon);
+        }
+        input, select, textarea { font-family: 'Cairo'; }
+    </style>
+</head>
+<body>
+<div class="webapp-container" id="appContainer">
+    <div class="system-status-bar"><span>🟢 متصل</span><span>التزام برو v5.0</span></div>
+    <div class="settings-top-trigger" onclick="toggleSettings()">⚙️</div>
+    <div class="logo-section">
+        <div class="logo-circle"><span style="font-size:24px;color:#00F2FE;">برو</span></div>
+        <div style="font-weight:800;font-size:20px;margin-top:6px;">التزام <span style="color:#00F2FE;">برو</span></div>
+    </div>
+    <div id="settingsDropdown" style="display:none; background:#0f172a; border:1px solid #00F2FE; border-radius:16px; padding:14px; margin-bottom:14px;">
+        <div class="grid-2">
+            <button class="btn" onclick="switchPage('editProfilePage')">📝 تعديل البيانات</button>
+            <button class="btn" onclick="switchPage('changePasswordPage')">🔑 تغيير السر</button>
+            <button class="btn" onclick="switchPage('staffPage')">👥 إدارة الموظفين</button>
+            <button class="btn" onclick="switchPage('currencyPage')">💱 العملة الرئيسية</button>
+            <button class="btn" onclick="switchPage('notificationsPage')">🔔 الإشعارات</button>
+            <button class="btn full-width" onclick="switchPage('generalSettingsPage')">⚙️ الإعدادات العامة</button>
+            <button class="btn full-width" style="background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.3); color:#ef4444;" onclick="logout()">🚪 تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- Main Page -->
+    <div id="mainPage" class="page active">
+        <div class="grid-2">
+            <button class="btn boxes full-width" onclick="switchPage('boxesPage')">🏦 الصناديق المالية</button>
+            <button class="btn entry-btn full-width" onclick="switchPage('addEntryPage')">📝 إضافة قيد</button>
+            <button class="btn" onclick="switchPage('addAccountPage')">➕ إضافة حساب</button>
+            <button class="btn" onclick="switchPage('entriesPage')">📊 إدارة القيود</button>
+            <button class="btn" onclick="switchPage('accountStatementPage')">📋 كشف حساب</button>
+            <button class="btn" onclick="switchPage('directoryPage')">👤 دليل الحسابات</button>
+            <button class="btn" onclick="switchPage('reportsPage')">📊 التقارير</button>
+            <button class="btn" onclick="switchPage('redeemPage')">🎁 استبدال النقاط</button>
+            <button class="btn" onclick="switchPage('referralPage')">🔗 رابط الإحالة</button>
+            <button class="btn services-btn full-width" onclick="switchPage('servicesPage')">📂 جميع الخدمات</button>
+            <button class="btn full-width" onclick="switchPage('controlPanelPage')">📱 لوحة التحكم</button>
+        </div>
+    </div>
+
+    <!-- Boxes Page -->
+    <div id="boxesPage" class="page">
+        <div class="box-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#10b981;">🏦 الصندوق الرئيسي</strong>
+                <span>رصيد: 0.0 يمني</span>
+            </div>
+            <div class="grid-2" style="margin-top:12px;">
+                <button class="btn" onclick="switchPage('editBoxPage')">🖊️ تعديل</button>
+                <button class="btn" onclick="switchPage('transferBoxPage')">📈 تحويل</button>
+            </div>
+            <button class="btn full-width" style="margin-top:10px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#10b981;" onclick="switchPage('addBoxPage')">➕ إضافة صندوق جديد</button>
+        </div>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Add Box Page -->
+    <div id="addBoxPage" class="page">
+        <h3 style="color:var(--cyan-neon);">➕ إضافة صندوق جديد</h3>
+        <input class="input-field" id="newBoxName" placeholder="اسم الصندوق">
+        <button class="btn entry-btn full-width" onclick="addBox()">💾 حفظ</button>
+        <button class="back-btn" onclick="switchPage('boxesPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Add Entry Page -->
+    <div id="addEntryPage" class="page">
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+            <button class="btn active" style="background:var(--cyan-neon); color:#000;" onclick="switchEntryTab('entryTab', this)">📝 قيد</button>
+            <button class="btn" onclick="switchEntryTab('transferTab', this)">🔄 تحويل</button>
+            <button class="btn" onclick="switchEntryTab('exchangeTab', this)">💱 مصارفة</button>
+        </div>
+        <div id="entryTab">
+            <input class="input-field" type="datetime-local" id="entryDate">
+            <div style="display:flex; gap:8px;">
+                <select class="input-field" style="flex:1;" id="entryAccount">
+                    <option value="">اختر الحساب</option>
+                </select>
+                <button class="btn" style="width:auto; white-space:nowrap;" onclick="openAccountSearch()">🔍 بحث</button>
+            </div>
+            <select class="input-field" id="entryBox"><option>الصندوق الرئيسي</option></select>
+            <input class="input-field" type="text" placeholder="العملة" onfocus="openCurrencyPopup(this)" value="يمني" readonly>
+            <select class="input-field" id="entryType"><option>له (دائن)</option><option>عليه (مدين)</option></select>
+            <input class="input-field" type="number" id="entryAmount" placeholder="0.00" oninput="updateAmountFeedback(this)">
+            <div id="amountFeedback" style="font-size:12px; color:var(--cyan-neon); margin-bottom:8px;"></div>
+            <textarea class="input-field" id="entryStatement" placeholder="البيان" rows="2"></textarea>
+            <button class="btn entry-btn full-width" onclick="saveEntry()">💾 حفظ وترحيل</button>
+        </div>
+        <div id="transferTab" style="display:none;"><p style="color:#94a3b8;">تحويل بين الحسابات</p></div>
+        <div id="exchangeTab" style="display:none;"><p style="color:#94a3b8;">مصارفة</p></div>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Add Account Page -->
+    <div id="addAccountPage" class="page">
+        <input class="input-field" placeholder="اسم الحساب" id="accName">
+        <div style="display:flex; gap:8px;">
+            <input class="input-field" placeholder="رقم الهاتف" id="accPhone" style="flex:1;">
+            <button class="btn" style="width:auto; white-space:nowrap;" onclick="openContacts()">📇 جهات الاتصال</button>
+        </div>
+        <button class="btn entry-btn full-width" onclick="saveAccount()">💾 حفظ</button>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Entries Page -->
+    <div id="entriesPage" class="page">
+        <div style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px;">
+            <button class="btn" onclick="filterEntries('all', this)">الكل</button>
+            <button class="btn" onclick="filterEntries('day', this)">يومي</button>
+            <button class="btn" onclick="filterEntries('week', this)">أسبوعي</button>
+            <button class="btn" onclick="filterEntries('month', this)">شهري</button>
+            <button class="btn" onclick="filterEntries('year', this)">سنوي</button>
+        </div>
+        <input class="input-field" placeholder="🔍 بحث..." oninput="searchLive(this.value)">
+        <div id="entriesList"><p style="color:#94a3b8; text-align:center;">لا توجد قيود</p></div>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Services Page -->
+    <div id="servicesPage" class="page">
+        <div class="grid-2">
+            <button class="btn" onclick="switchPage('receiptPage')">💵 سند قبض</button>
+            <button class="btn" onclick="switchPage('moneyTransferPage')">📩 حوالة مالية</button>
+            <button class="btn" onclick="switchPage('salesPage')">🛒 فاتورة مبيعات</button>
+            <button class="btn" onclick="switchPage('itemsPage')">🏷️ إدارة الأصناف</button>
+            <button class="btn" onclick="switchPage('warehousesPage')">📦 المخازن</button>
+            <button class="btn" onclick="switchPage('debtPage')">📈 متابعة الديون</button>
+            <button class="btn full-width" onclick="switchPage('utilityPage')">💡 فواتير الكهرباء والماء</button>
+            <button class="btn full-width" onclick="switchPage('directoryPage')">👥 دليل المشتركين</button>
+            <button class="btn full-width" onclick="switchPage('reportsPage')">📊 التقارير والإحصائيات</button>
+            <button class="btn entry-btn full-width" onclick="window.open('https://wa.me/message/ECXIR3SSPZNGJ1')">👑 تجديد الاشتراك</button>
+        </div>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Utility Page (Electricity/Water) -->
+    <div id="utilityPage" class="page">
+        <button class="btn full-width" onclick="switchPage('invoicePage')">➕ إضافة فاتورة</button>
+        <div id="utilityList" style="margin-top:12px; color:#94a3b8; text-align:center;">لا توجد فواتير</div>
+        <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Invoice Page -->
+    <div id="invoicePage" class="page">
+        <select class="input-field" id="serviceType"><option>⚡ كهرباء تجارية</option><option>💧 مياه</option></select>
+        <input class="input-field" placeholder="اسم المشترك" id="custName" oninput="updatePrevRead()">
+        <input class="input-field" type="text" placeholder="العملة" onfocus="openCurrencyPopup(this)" value="يمني" readonly>
+        <select class="input-field" id="moneyBox"><option>الصندوق الرئيسي</option></select>
+        <div style="background:#0f172a; padding:10px; border-radius:8px; margin-bottom:12px;">
+            📌 القراءة السابقة: <span id="prevRead">0.0</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <input class="input-field" type="number" id="currRead" placeholder="القراءة الحالية" style="flex:1;">
+            <button class="btn" style="width:auto;" onclick="openCamera()">📷</button>
+        </div>
+        <button class="btn entry-btn full-width" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn">🖨️ PDF</button>
+            <button class="btn">🖨️ طباعة سريعة</button>
+            <button class="btn">💾 PNG</button>
+        </div>
+        <button class="back-btn" onclick="switchPage('utilityPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Money Transfer Page -->
+    <div id="moneyTransferPage" class="page">
+        <h3 style="color:var(--cyan-neon);">📩 حوالة مالية</h3>
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+            <button class="btn" style="background:var(--cyan-neon); color:#000;" id="receiveBtn" onclick="setTransferType('receive')">📥 استلام</button>
+            <button class="btn" id="sendBtn" onclick="setTransferType('send')">📤 إرسال</button>
+        </div>
+        <input class="input-field" placeholder="رقم الحوالة" id="transferNumber" readonly>
+        <input class="input-field" placeholder="المرسل / الجهة" id="transferSender">
+        <input class="input-field" placeholder="المستلم" id="transferReceiver">
+        <div class="grid-2">
+            <input class="input-field" type="number" placeholder="المبلغ" id="transferAmount">
+            <input class="input-field" type="text" placeholder="العملة" onfocus="openCurrencyPopup(this)" value="يمني" readonly>
+        </div>
+        <input class="input-field" type="datetime-local" id="transferDate">
+        <select class="input-field"><option>الصندوق الرئيسي</option></select>
+        <textarea class="input-field" placeholder="البيان" rows="2"></textarea>
+        <button class="btn entry-btn full-width" onclick="saveTransfer()">💾 ترحيل</button>
+        <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Receipt Page -->
+    <div id="receiptPage" class="page">
+        <h3 style="color:var(--cyan-neon);">📥 سند قبض</h3>
+        <input class="input-field" value="#REC-1002" readonly>
+        <input class="input-field" type="datetime-local" id="receiptDate">
+        <input class="input-field" placeholder="قُبض من">
+        <input class="input-field" type="number" placeholder="المبلغ">
+        <input class="input-field" type="text" placeholder="العملة" onfocus="openCurrencyPopup(this)" value="يمني" readonly>
+        <select class="input-field"><option>الصندوق الرئيسي</option></select>
+        <textarea class="input-field" placeholder="البيان" rows="2"></textarea>
+        <button class="btn entry-btn full-width">💾 حفظ السند</button>
+        <button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- باقي الصفحات المختصرة -->
+    <div id="editProfilePage" class="page"><h3>تعديل البيانات</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="changePasswordPage" class="page"><h3>تغيير السر</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="staffPage" class="page">
+        <h3>👥 إدارة الموظفين</h3>
+        <input class="input-field" placeholder="اسم الموظف"><input class="input-field" placeholder="رقم الهاتف"><input class="input-field" placeholder="كلمة المرور">
+        <button class="btn entry-btn full-width">حفظ وإرسال الدعوة</button>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+    <div id="currencyPage" class="page"><h3>العملة الرئيسية</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="notificationsPage" class="page"><h3>الإشعارات</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="generalSettingsPage" class="page"><h3>الإعدادات العامة</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="directoryPage" class="page"><h3>دليل المشتركين</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="reportsPage" class="page"><h3>التقارير والإحصائيات</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="redeemPage" class="page"><h3>استبدال النقاط</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="referralPage" class="page"><h3>رابط الإحالة</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="controlPanelPage" class="page"><h3>لوحة التحكم</h3><button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button></div>
+    <div id="salesPage" class="page"><h3>فاتورة مبيعات</h3><button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button></div>
+    <div id="itemsPage" class="page"><h3>إدارة الأصناف</h3><button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button></div>
+    <div id="warehousesPage" class="page"><h3>المخازن</h3><button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button></div>
+    <div id="debtPage" class="page"><h3>متابعة الديون</h3><button class="back-btn" onclick="switchPage('servicesPage')">↩️ رجوع</button></div>
+    <div id="editBoxPage" class="page"><h3>تعديل الصندوق</h3><button class="back-btn" onclick="switchPage('boxesPage')">↩️ رجوع</button></div>
+    <div id="transferBoxPage" class="page"><h3>تحويل بين الصناديق</h3><button class="back-btn" onclick="switchPage('boxesPage')">↩️ رجوع</button></div>
+    <div id="accountStatementPage" class="page">
+        <h3>📋 كشف حساب</h3>
+        <button class="btn full-width" onclick="openAccountSearch()">🔍 بحث عن عميل</button>
+        <p style="color:#94a3b8;">اختر عميلاً لعرض كشف الحساب</p>
+        <button class="back-btn" onclick="switchPage('mainPage')">↩️ رجوع</button>
+    </div>
+
+    <!-- Currency Popup -->
+    <div id="currencyPopup" class="currency-popup" onclick="closeCurrencyPopup()">
+        <div class="currency-popup-content" onclick="event.stopPropagation()">
+            <h4 style="color:var(--cyan-neon);">اختر العملة</h4>
+            <button class="currency-opt" onclick="selectCurrency('يمني')">🇾🇪 يمني</button>
+            <button class="currency-opt" onclick="selectCurrency('سعودي')">🇸🇦 سعودي</button>
+            <button class="currency-opt" onclick="selectCurrency('دولار')">🇺🇸 دولار</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">✨ تم الحفظ بنجاح</div>
+</div>
+
+<script>
+    var tg = window.Telegram?.WebApp;
+    var activeCurrencyInput = null;
+    var mockEntries = [];
+    var mockAccounts = [];
+    var currentEntryTab = 'entryTab';
+
+    function switchPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        var target = document.getElementById(id);
+        if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+    }
+    function toggleSettings() {
+        var d = document.getElementById('settingsDropdown');
+        d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    }
+    function openCurrencyPopup(input) {
+        activeCurrencyInput = input;
+        document.getElementById('currencyPopup').classList.add('show');
+    }
+    function closeCurrencyPopup() {
+        document.getElementById('currencyPopup').classList.remove('show');
+    }
+    function selectCurrency(cur) {
+        if (activeCurrencyInput) activeCurrencyInput.value = cur;
+        closeCurrencyPopup();
+    }
+    function openAccountSearch() { alert('فتح نافذة البحث عن الحسابات (محاكاة)'); }
+    function openCamera() {
+        if (tg?.showScanQrPopup) tg.showScanQrPopup({text:'وجه الكاميرا'}, r => {
+            document.getElementById('currRead').value = r;
+        });
+        else alert('الكاميرا تعمل في تطبيق تليجرام');
+    }
+    function openContacts() {
+        if (tg?.requestContact) tg.requestContact(c => {
+            if (c?.phone_number) document.getElementById('accPhone').value = c.phone_number;
+        });
+        else alert('اختر جهة اتصال');
+    }
+    function addBox() {
+        var name = document.getElementById('newBoxName').value;
+        if (name) { alert('تم إضافة صندوق: ' + name); switchPage('boxesPage'); }
+    }
+    function updateAmountFeedback(input) {
+        var val = parseFloat(input.value);
+        var fb = document.getElementById('amountFeedback');
+        if (!fb) return;
+        if (!val || isNaN(val)) { fb.innerText = ''; return; }
+        fb.innerHTML = 'المبلغ: <b>' + val.toLocaleString() + '</b>';
+    }
+    function saveEntry() {
+        var account = document.getElementById('entryAccount').value;
+        var amount = document.getElementById('entryAmount').value;
+        if (!account || !amount || parseFloat(amount) <= 0) { alert('يرجى إكمال الحقول'); return; }
+        mockEntries.push({ id: Date.now(), account: account, amount: parseFloat(amount), statement: document.getElementById('entryStatement').value || 'قيد' });
+        showToast('✨ تم حفظ القيد بنجاح');
+        switchPage('mainPage');
+    }
+    function saveAccount() {
+        var name = document.getElementById('accName').value;
+        var phone = document.getElementById('accPhone').value;
+        if (!name) { alert('أدخل اسم الحساب'); return; }
+        mockAccounts.push({ name: name, phone: phone, balances: {} });
+        showToast('✨ تم حفظ الحساب');
+        switchPage('mainPage');
+    }
+    function saveInvoice() {
+        var curr = document.getElementById('currRead').value;
+        var prev = document.getElementById('prevRead').innerText;
+        if (parseFloat(curr) < parseFloat(prev)) { alert('القراءة الحالية أقل من السابقة'); return; }
+        showToast('✨ تم حفظ الفاتورة');
+        switchPage('utilityPage');
+    }
+    function saveTransfer() {
+        showToast('✨ تم ترحيل الحوالة');
+        switchPage('servicesPage');
+    }
+    function updatePrevRead() {
+        var name = document.getElementById('custName').value;
+        document.getElementById('prevRead').innerText = name ? '1050' : '0.0';
+    }
+    function switchEntryTab(tabId, btn) {
+        document.getElementById('entryTab').style.display = 'none';
+        document.getElementById('transferTab').style.display = 'none';
+        document.getElementById('exchangeTab').style.display = 'none';
+        document.getElementById(tabId).style.display = 'block';
+        document.querySelectorAll('#addEntryPage .btn').forEach(b => b.style.background = '');
+        if (btn) btn.style.background = 'var(--cyan-neon)';
+    }
+    function setTransferType(type) {
+        document.getElementById('receiveBtn').style.background = type === 'receive' ? 'var(--cyan-neon)' : '';
+        document.getElementById('sendBtn').style.background = type === 'send' ? 'var(--cyan-neon)' : '';
+    }
+    function filterEntries(period, btn) {
+        document.querySelectorAll('#entriesPage .btn').forEach(b => b.style.background = '');
+        if (btn) btn.style.background = 'var(--cyan-neon)';
+        showToast('فلترة: ' + period);
+    }
+    function searchLive(query) {
+        console.log('بحث: ' + query);
+    }
+    function showToast(msg) {
+        var t = document.getElementById('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+    function logout() { if (tg) tg.close(); else alert('تم تسجيل الخروج'); }
+</script>
+</body>
+</html>
